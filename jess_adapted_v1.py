@@ -1,16 +1,61 @@
-import math
 import time
 
 import networkx as nx
-import matplotlib.pyplot as plt
-import random
+import matplotlib
+from matplotlib import pyplot as plt
 import numpy as np
 
+from heuristic import Heuristic, populate_threat_dict, dict_of_heuristic_names
+from choices import Heur, CFn, dict_of_cost_names
+from cost_function import CostFunction
+
 plt.rc('font', family='serif')
-plt.rc('text', usetex=True)
+plt.rcParams['figure.dpi'] = 600
+plt.rcParams['savefig.dpi'] = 600
 
 
-def cost_firefighter(graph, burning, protected, choose, cost_function, num_rounds, INFO=False, budget=5):
+def run_experiments(size, p, num_trials, graph_type, heuristics, cost_type, budget=5):
+    trials = {}
+    # for graph in graph_types:
+    choice_functions = [Heuristic(name) for name in heuristics]
+
+    print('-' * num_trials, f'100% ({num_trials} trials)')
+    for i in range(num_trials):
+        print("-", end="")
+        g = get_graph(graph_type, p, size)
+
+        for choice_type in choice_functions:
+            saved = cost_firefighter(g, {0}, set([]), choice_type, cost_type,
+                                     num_rounds=int(g.number_of_nodes() / 2), budget=budget, INFO=False)
+            if (graph_type, size, p, cost_type, choice_type.which_heuristic) not in trials:
+                trials[(graph_type, size, p, cost_type, choice_type.which_heuristic)] = []
+            trials[(graph_type, size, p, cost_type, choice_type.which_heuristic)].append(saved)
+    print(" 100% - complete")
+    return trials
+
+
+def get_graph(graph_type, p, size):
+    if graph_type.lower() in ['erdos renyi', 'er']:
+        g = nx.barabasi_albert_graph(size, p)
+    elif graph_type.lower() in ['barabasi-albert', 'barabasi albert', 'ba']:
+        g = nx.barabasi_albert_graph(m=p, n=size)
+    elif graph_type.lower() in ['random geometric', 'rand geom', 'geometric random', 'geom rand']:
+        g = nx.random_geometric_graph(radius=p, n=size)
+    elif ' ' in graph_type and graph_type.split()[0] in ['random'] and graph_type.split()[1][1:] == "-regular":
+        if p * size % 2 == 0:
+            g = nx.random_regular_graph(d=p, n=size)  # we take p to be n in 'random n-regular'
+        else:
+            print(f'\ngenerating random {p}-regular with {size + 1} vertices rather than {size} \n'
+                  f'  since num vertices * d must be even for random d-reg graph')
+            g = nx.random_regular_graph(d=p, n=(size + 1))
+    else:
+        raise Exception(f"\nSorry, I didn't recognise this graph type: {graph_type}")
+    return g
+
+
+def cost_firefighter(graph, burning, protected, heuristic_choice, cost_function_type, num_rounds=50, INFO=True,
+                     budget=5):
+    heuristic = Heuristic(heuristic_choice)
     if INFO:
         print("\n\n\nNEW RUN")
     total_nodes = len(graph.nodes())
@@ -20,12 +65,14 @@ def cost_firefighter(graph, burning, protected, choose, cost_function, num_round
         open = graph.nodes() - protected - burning
         if len(open) == 0:
             break
-        threat_dict = calculate_threat(graph, protected, burning, cost_function)
-        # print(threat_dict)
         # choose something to protect
-        costs = cost_function(graph, protected, burning, threat_dict=threat_dict)
+        cost_fn = CostFunction(cost_function_type)
+        threat_dict = populate_threat_dict(graph, burning, protected)
+        costs = cost_fn.cost(graph, threat_dict=threat_dict)
         if INFO:
+            print("Threat dict", threat_dict)
             print("COST FUNCTION")
+            print(cost_fn, cost_function_type)
             print(costs)
 
         total_cost = 0
@@ -33,7 +80,7 @@ def cost_firefighter(graph, burning, protected, choose, cost_function, num_round
             open = graph.nodes() - protected - burning
             if len(open) == 0:
                 break
-            node_to_protect = choose(graph, protected, burning, costs, threat_dict)
+            node_to_protect = heuristic.choose(graph, protected, burning, costs)
             total_cost += costs[node_to_protect]
             if total_cost < budget:
                 protected.add(node_to_protect)
@@ -55,339 +102,115 @@ def cost_firefighter(graph, burning, protected, choose, cost_function, num_round
     return len(graph.nodes()) - len(burning)
 
 
-def uniform_cost(graph, protected, burning, value=1, threat_dict={}):
-    dict_of_costs = {}
-    for vertex in graph.nodes():
-        dict_of_costs[vertex] = value
-    return dict_of_costs
+def main():
+    cost_functions = [CFn.STOCHASTIC_THREAT]
 
+    heuristics = [Heur.DEGREE, Heur.THREAT, Heur.COST]
+    # [Heur.DEGREE, Heur.THREAT, Heur.COST,
+    #           (Heur.DEGREE, Heur.THREAT),
+    #           (Heur.DEGREE, Heur.COST),
+    #           (Heur.THREAT, Heur.COST)]
 
-def uniform_random_cost(graph, protected, burning, value=1, threat_dict={}):
-    dict_of_costs = {}
-    max_val = 5
-    for vertex in graph.nodes():
-        dict_of_costs[vertex] = random.randint(1, max_val)
-    return dict_of_costs
+    num_vertices = 50
+    num_trials = 10
+    budget = int(num_vertices / 10)
 
+    graph_types = {"random geometric": [0.15]}
+                   # "random n-regular": [4],
+                   # "Barabasi-Albert": [int(num_vertices / 16)]}
 
-# NB Designed for HIGH budgets e.g. defending one vertex should cost on avg. 25
-def hesitancy_distribution_cost(graph, protected, burning, value=1, threat_dict={}, mean=29.72, std_dev=10):
-    """
-    Generate a defense cost for a vertex in the firefighter problem.
+    colour_map = {heuristics[i]: f'C{i}' for i in range(len(heuristics))}
 
-    :param mean: The mean cost, average vaccine uptake (default 29.72)
-    :param std_dev: The standard deviation for the normal distribution (default is 10). Should be adjusted based on
-      graph density s.t. average uptake is appropriate - in original paper, 75.2% uptake of vaccines so each
-    :return: An integer representing the defense cost, clamped between 1 and 100.
-    """
-    dict_of_costs = {}
-
-    # if std_dev == -1:
-    #     z_score = stats.norm.ppf(probability)  # Find Z-score for the given probability
-    #     # Calculate required standard deviation
-    #     std_dev = (budget - mean) / z_score
-
-    for vertex in graph.nodes():
-        # Generate a normally distributed cost
-        init_cost = random.normalvariate(mean, std_dev)
-
-        # Clamp the cost between 1 and 100 and add to dict
-        dict_of_costs[vertex] = int(np.clip(round(init_cost), 1, 100))
-
-    return dict_of_costs
-
-
-def binary_distribution_cost(graph, protected, burning, value=1, threat_dict={}, probability=0.2972):
-    """
-    Generate a defense cost for a vertex in the firefighter problem.
-
-    :param mean: The mean cost, average vaccine uptake (default 29.72)
-    :param std_dev: The standard deviation for the normal distribution (default is 10). Should be adjusted based on
-      graph density s.t. average uptake is appropriate - in original paper, 75.2% uptake of vaccines so each
-    :return: An integer representing the defense cost, clamped between 1 and 100.
-    """
-    dict_of_costs = {}
-    for vertex in graph.nodes():
-        # Generate a random number
-        r = random.random()
-
-        # costs 1 if r above mean, 0 otherwise
-        dict_of_costs[vertex] = 1 if r > probability else 0
-
-    return dict_of_costs
-
-
-def test_hesitancy_cost_fn():
-    # Generate a list of costs to visualize distribution
-    n_samples = 100000
-    costs = [hesitancy_distribution_cost(_, _, _) for _ in range(n_samples)]
-    # Analyze and print results
-    print(f"Mean Cost: {np.mean(costs):.2f}")
-    print(f"Median Cost: {np.median(costs):.2f}")
-    print(f"Min Cost: {min(costs)}")
-    print(f"Max Cost: {max(costs)}")
-    plt.figure(figsize=(12, 6))
-    plt.hist(costs, bins=(max(costs) - min(costs)), edgecolor='black', alpha=0.7)
-    plt.title('Distribution of Defense Costs')
-    plt.xlabel('Cost')
-    plt.ylabel('Frequency')
-    plt.axvline(np.mean(costs), color='r', linestyle='dashed', linewidth=2, label=f'Mean: {np.mean(costs):.2f}')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.show()
-
-
-# test_hesitancy_cost_fn()
-
-
-def threat_cost(graph, protected, burning, value=1, threat_dict={}):
-    dict_of_costs = {}
-    for vertex in threat_dict:
-        dict_of_costs[vertex] = threat_dict[vertex]
-    return dict_of_costs
-
-
-def stochastic_threat_cost(graph, protected, burning, threat_dict, value=1, spread=1):
-    dict_of_costs = {}
-    for vertex in threat_dict:
-        dict_of_costs[vertex] = threat_dict[vertex] + random.randint(-spread, spread)
-        if dict_of_costs[vertex] < 0:
-            dict_of_costs[vertex] = 1
-    # print(dict_of_costs)
-    return dict_of_costs
-
-
-def stochastic_threat_cost_low(graph, protected, burning, threat_dict, value=1):
-    return stochastic_threat_cost(graph, protected, burning, threat_dict, spread=1)
-
-
-def stochastic_threat_cost_mid(graph, protected, burning, threat_dict, value=1):
-    return stochastic_threat_cost(graph, protected, burning, threat_dict, spread=2)
-
-
-def stochastic_threat_cost_hi(graph, protected, burning, threat_dict, value=1):
-    return stochastic_threat_cost(graph, protected, burning, threat_dict, spread=3)
-
-
-def random_choice(graph, protected, burning, costs, threat_dict={}):
-    open = graph.nodes() - protected - burning
-    return random.choice(list(open))
-
-
-def cheapest_choice(graph, protected, burning, costs, threat_dict={}):
-    open = graph.nodes() - protected - burning
-    return min(open, key=lambda x: costs[x])
-
-
-def calculate_threat(graph, protected, burning, cost_function):
-    dict_threat = {}
-    open = graph.nodes() - protected - burning
-    for vertex in open:
-        current_shortest = len(open)
-        dist = graph.number_of_edges()
-        for fire in burning:
-            if nx.has_path(graph, fire, vertex):
-                dist = nx.shortest_path_length(graph, fire, vertex)
-                if dist < current_shortest:
-                    current_shortest = dist
-        dict_threat[vertex] = dist
-    return dict_threat
-
-
-def threat_choice(graph, protected, burning, costs, threat_dict):
-    open = graph.nodes() - protected - burning
-    return min(open, key=lambda x: threat_dict[x])
-
-
-def threat_cheapest(graph, protected, burning, costs, threat_dict):
-    open = graph.nodes() - protected - burning
-    threat_cheapest_dict = {}
-    for v in threat_dict:
-        if v in open:
-            threat_cheapest_dict[v] = (threat_dict[v], costs[v])
-    return min(open, key=lambda x: threat_cheapest_dict[x])
-
-
-def cheapest_threat(graph, protected, burning, costs, threat_dict):
-    open = graph.nodes() - protected - burning
-    for v in threat_dict:
-        if v in open:
-            threat_cheapest[v] = (costs[v], threat_dict[v])
-    return min(open, key=lambda x: threat_cheapest[x])
-
-
-def degree_choice(graph, protected, burning, costs, threat_dict):
-    open = graph.nodes() - protected - burning
-    return min(open, key=lambda x: graph.degree(x))
-
-
-def degree_cheapest(graph, protected, burning, costs, threat_dict):
-    open = graph.nodes() - protected - burning
-    degree_cheapest = {}
-    # print ("OPEN IS "  + str(open))
-    for v in costs:
-        if v in open:
-            degree_cheapest[v] = (graph.degree(v), costs[v])
-    return min(degree_cheapest.keys(), key=lambda x: degree_cheapest[x])
-
-
-# Example usage
-
-
-# Now we want some basic experiments.
-# start with: on graph type (start with ER), for each graph, cost function, heuristic how many are saved?
-
-
-def run_experiments(size, p, num_trials, graph_type, cost_type=uniform_cost, budget=5):
-    trials = {}
-    # for graph in graph_types:
-    dict_of_choice_funs = {"degree_cheapest": degree_cheapest, "degree_choice": degree_choice,
-                           "threat_cheapest_cost": threat_cheapest,
-                           "cost_only_choice": cheapest_choice}
-    #  , 'stochastic_threat_cost': stochastic_threat_cost}
-    # dict_of_cost_funs = {'threat_cost': threat_cost}
-    print('-'*num_trials, f'100% ({num_trials} trials)')
-    for i in range(num_trials):
-        print("-", end="")
-        if graph_type.lower() in ['erdos renyi', 'er']:
-            g = nx.barabasi_albert_graph(size, p)
-        elif graph_type.lower() in ['barabasi-albert', 'barabasi albert', 'ba']:
-            g = nx.barabasi_albert_graph(m=p, n=size)
-        elif graph_type.lower() in ['random geometric', 'rand geom', 'geometric random', 'geom rand']:
-            g = nx.random_geometric_graph(radius=p, n=size)
-        elif ' ' in graph_type and graph_type.split()[0] in ['random'] and graph_type.split()[1][1:] == "-regular":
-            if p * size % 2 == 0:
-                g = nx.random_regular_graph(d=p, n=size)  # we take p to be n in 'random n-regular'
-            else:
-                print(f'\ngenerating random {p}-regular with {size + 1} vertices rather than {size} \n'
-                      f'  since num vertices * d must be even for random d-reg graph')
-                g = nx.random_regular_graph(d=p, n=(size + 1))
-        else:
-            raise Exception(f"\nSorry, I didn't recognise this graph type: {graph_type}")
-
-        # for cost_type in dict_of_cost_funs:
-        for choice_type in dict_of_choice_funs:
-            saved = cost_firefighter(g, {0}, set([]), dict_of_choice_funs[choice_type], cost_type,
-                                     num_rounds=int(g.number_of_nodes()/2), budget=budget)
-            if (graph_type, size, p, cost_type, choice_type) not in trials:
-                trials[(graph_type, size, p, cost_type, choice_type)] = []
-            trials[(graph_type, size, p, cost_type, choice_type)].append(saved)
-    print(" 100% - complete")
-    return trials
-
-
-def do_the_experiments(dict_of_cost_funs, dict_of_cost_names, dict_of_choice_names, dict_of_graph_types, colour_map,
-                       num_vertices=100, budget=5, num_trials=50, info=False):
     start = time.time()
-    for cost_type in dict_of_cost_funs:
+    for cost_type in cost_functions:
         each_cost_start = time.time()
 
-        for each_type in dict_of_graph_types.keys():
+        for each_graph in graph_types.keys():
             each_graph_start = time.time()
             results = {}
-            for each_param in dict_of_graph_types[each_type]:
-                print(f'Cost fn.: {cost_type}, graph type: {each_type}, input param.: {each_param}')
-                latest_results = run_experiments(num_vertices, each_param, num_trials, each_type,
-                                                 cost_type=dict_of_cost_funs[cost_type], budget=budget)
+            for each_param in graph_types[each_graph]:
+                print(f'Cost fn.: {cost_type}, graph type: {each_graph}, input param.: {each_param}')
+                latest_results = run_experiments(num_vertices, each_param, num_trials, each_graph, heuristics,
+                                                 cost_type=cost_type, budget=budget)
                 results.update(latest_results)
-                plt.clf()
-                for guy in latest_results:
-                    colour = colour_map.get(guy[4], 'gray')  # Default to gray if not found
-                    if info:
-                        print(guy, results[guy])
-
-                    # Histogram
-                    plt.subplot(1, 2, 1)  # First subplot for histogram
-                    counts, bins, _ = plt.hist(results[guy], bins=30, alpha=0.4,
-                                               label=dict_of_choice_names[guy[4]], density=True)
-                    plt.xlim(-5, num_vertices+5)
-                    plt.ylim(0, min(counts.max() * 1.2, 1))
-                    plt.ylabel('Frequency')
-                    plt.xlabel('Number of nodes saved')
-                    plt.title('Histogram of results')
-                    plt.legend()
-
-                    # Scatter Plot
-                    plt.subplot(1, 2, 2)  # Second subplot for scatter plot
-                    x_values = np.arange(len(results[guy]))  # X-axis: trial number or index
-
-                    # Scatter points for the heuristic
-                    scatter = plt.scatter(x_values, results[guy], alpha=0.6,
-                                          label=dict_of_choice_names[guy[4]], color=colour)
-
-                    # Mean line for the heuristic
-                    mean_value = np.mean(results[guy])
-                    mean_line = plt.axhline(y=mean_value, color=colour, linestyle='--',
-                                            label=f'Mean ({dict_of_choice_names[guy[4]]})')
-
-                # Add legends to both subplots after all plotting is done
-                plt.subplot(1, 2, 1)  # Go back to histogram subplot
-                plt.legend(loc='upper right')
-
-                plt.subplot(1, 2, 2)  # Go to scatter plot subplot
-                plt.legend(loc='upper right')
-
-                # Show the combined plots
-                plt.title(
-                    f'{dict_of_cost_names[cost_type]} fn.\non {each_type} graphs on\n{num_vertices} vertices, '
-                    f'input param {each_param}')
-                plt.tight_layout()
-                plt.show()
-                each_graph_end = time.time() - each_graph_start
-                print(
-                    f'end of considering {each_type} with {num_vertices} vx, param {each_param}, under {cost_type}, '
-                    f'took {each_graph_end} secs')
+                plot_helper(colour_map, cost_type, each_graph, each_graph_start, each_param, latest_results, num_vertices,
+                            results)
 
         each_cost_end = time.time() - each_cost_start
         print(f'end of considering {cost_type}, took {each_cost_end} secs')
     print('All done!')
-    print(f'TOTAL time taken: {time.time()-start} secs')
+    print(f'TOTAL time taken: {time.time() - start} secs')
 
-def main():
-    # dict_of_cost_funs = {'stochastic_threat_cost_low': stochastic_threat_cost_low,
-    #                      'stochastic_threat_cost_mid': stochastic_threat_cost_mid,
-    #                      'stochastic_threat_cost_hi': stochastic_threat_cost_hi,
-    #                      'uniform_random_cost': uniform_random_cost,
-    #                      'uniform_cost': uniform_cost, }
-    # dict_of_cost_names = {'stochastic_threat_cost_low': 'Low-stochasticity threat',
-    #                       'stochastic_threat_cost_mid': 'Mid-stochasticity threat',
-    #                       'stochastic_threat_cost_hi': 'High-stochasticity threat',
-    #                       'uniform_random_cost': 'Uniform random',
-    #                       'uniform_cost': 'Uniform Cost'}
 
-    choices = ["degree_cheapest", "degree_choice", "threat_cheapest_cost", "cost_only_choice"]
+def plot_helper(colour_map, cost_type, each_graph, each_graph_start, each_param, latest_results, num_vertices, results):
+    plt.clf()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # Slightly increased width
 
-    dict_of_choice_names = {choices[0]: 'Degree/cost', choices[1]: 'Degree',
-                            choices[2]: 'Threat/cost',
-                            choices[3]: 'Cost'}
-    num_vertices = 100
-    num_trials = 50
+    handles = []
+    labels = []
 
-    # {name of graph type: [[num vertices, probability]]}
-    graph_types = {"random geometric": [0.1, 0.15, 0.2],
-                   "random n-regular": [3, 4, 5],
-                   "Barabasi-Albert": [int(num_vertices / 16), int(num_vertices / 8)]}
+    for guy in latest_results:
+        colour = colour_map.get(guy[4], 'gray')  # Default to gray if not found
+        print("   ", guy, results[guy])
 
-    colour_map = {choices[i]: f'C{i}' for i in range(len(choices))}
+        # Histogram
+        counts, bins, hist_patches = ax1.hist(results[guy], bins=30, alpha=0.4, color=colour,
+                                              label=dict_of_heuristic_names[guy[4]], density=True)
+        handles.append(hist_patches[0])
+        labels.append(dict_of_heuristic_names[guy[4]])
 
-    dict_of_cost_funs = {'hesitancy_cost': hesitancy_distribution_cost, 'binary_cost': binary_distribution_cost}
-    dict_of_cost_names = {'hesitancy_cost': 'Hesitancy cost', 'binary_cost': 'Binary cost'}
+        ax1.set_xlim(-5, num_vertices + 5)
+        ax1.set_ylim(0, min(counts.max() * 1.2, 1))
+        ax1.set_ylabel('Frequency', fontsize=12)
+        ax1.set_xlabel('Number of nodes saved', fontsize=12)
+        ax1.set_title('Histogram of results', fontsize=14)
+        ax1.tick_params(axis='both', which='major', labelsize=10)
 
-    do_the_experiments(dict_of_cost_funs, dict_of_cost_names, dict_of_choice_names, graph_types, colour_map,
-                       num_vertices=num_vertices, budget=15, num_trials=num_trials)
+        # Scatter Plot
+        x_values = np.arange(len(results[guy]))  # X-axis: trial number or index
+
+        # Scatter points for the heuristic
+        scatter = ax2.scatter(x_values, results[guy], alpha=0.6, color=colour)
+
+        # Mean line for the heuristic
+        mean_value = np.mean(results[guy])
+        mean_line = ax2.axhline(y=mean_value, color=colour, linestyle='--')
+
+    # Set title for scatter plot
+    ax2.set_title('Scatter plot of results', fontsize=14)
+    ax2.set_xlabel('Trial number', fontsize=12)
+    ax2.set_ylabel('Number of nodes saved', fontsize=12)
+    ax2.tick_params(axis='both', which='major', labelsize=10)
+
+    # Set overall title
+    fig.suptitle(
+        f'{dict_of_cost_names[cost_type]} fn. on {each_graph} graphs on {num_vertices} vertices, '
+        f'input param {each_param}',
+        fontsize=16
+    )
+
+    # Create a single legend centered vertically and anchored to the right
+    fig.legend(handles, labels, loc='center right', bbox_to_anchor=(1, 0.5), fontsize=10)
+
+    plt.tight_layout()
+    plt.subplots_adjust(wspace=0.2, right=0.85)  # Increase spacing between subplots
+    plt.show()
+
+    each_graph_end = time.time() - each_graph_start
+    print(
+        f'end of considering {each_graph} with {num_vertices} vx, param {each_param}, under {cost_type}, '
+        f'took {each_graph_end} secs'
+    )
+
+
 
 
 if __name__ == main():
     main()
 
-# next task, add a budget and multiple defences - done
-# next task, generate interesting experiments
-# Possible interesting experiments: geometric random graphs and on random regular graphs what
-# heuristics do better along with which cost functions
 # add a periodic cost function?
 # a heuristic that is in-proportion stochastically to cost?
 # OR even better a cost that is stochastically related to threat
 # Those are done
 
-# Next up: different graph classes: ba, random regular, geometric
-# Then better visualisations
+# Better visualisations

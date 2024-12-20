@@ -105,7 +105,7 @@ def calculate_threat(graph, protected, burning, cost_function):
       dist = nx.shortest_path_length(graph, fire, vertex)
       if dist < current_shortest:
         current_shortest = dist
-    dict_threat[vertex] = dist
+    dict_threat[vertex] = dist  # E: this should maybe be `current_shortest`
   return dict_threat
 
 def threat_choice(graph, protected, burning, costs, threat_dict):
