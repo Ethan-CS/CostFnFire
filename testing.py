@@ -15,7 +15,7 @@ def test_hesitancy_cost_fn():
     n_samples = 100000
     graph = nx.Graph()
     graph.add_nodes_from(range(1, n_samples + 1))
-    hesitancy = CostFunction(CFn.HESITANCY_NORMAL)
+    hesitancy = CostFunction(CFn.HESITANCY_BINARY)
     costs = list(hesitancy.cost(graph).values())
     # Analyze and print results
     print(f"Mean Cost: {np.mean(costs):.2f}")

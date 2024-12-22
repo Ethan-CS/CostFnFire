@@ -15,8 +15,7 @@ class CFn(Enum):
     STOCHASTIC_THREAT_LO = 3,  # threat with some random noise - lo/med/hi
     STOCHASTIC_THREAT_MID = 4,
     STOCHASTIC_THREAT_HI = 5,
-    HESITANCY_NORMAL = 6,  # rand distribution with mean = hesitancy rate
-    HESITANCY_BINARY = 7  # 0 with probability = hesitancy rate, 1 otherwise
+    HESITANCY_BINARY = 6  # 0 with probability = hesitancy rate, 1 otherwise
 
 
 dict_of_cost_names = {CFn.UNIFORM: 'Uniform',
@@ -25,6 +24,5 @@ dict_of_cost_names = {CFn.UNIFORM: 'Uniform',
                       CFn.STOCHASTIC_THREAT_LO: 'Threat with Stochasticity (low)',
                       CFn.STOCHASTIC_THREAT_MID: 'Threat with Stochasticity (mid)',
                       CFn.STOCHASTIC_THREAT_HI: 'Threat with Stochasticity (high)',
-                      CFn.HESITANCY_NORMAL: 'Hesitancy - Normal Distribution',
                       CFn.HESITANCY_BINARY: 'Hesitancy - Binary Distribution'
                       }
