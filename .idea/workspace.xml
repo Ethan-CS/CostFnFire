@@ -4,14 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Initial commit - new graph classes and cost functions">
-      <change afterPath="$PROJECT_DIR$/choices.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cost_function.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/heuristic.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
+    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Refactoring and testing">
+      <change afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/choices.py" beforeDir="false" afterPath="$PROJECT_DIR$/choices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cost_function.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/costs_and_heuristics.py" beforeDir="false" afterPath="$PROJECT_DIR$/costs_and_heuristics.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/jess_adapted_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/jess_adapted_v1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jess_original.py" beforeDir="false" afterPath="$PROJECT_DIR$/jess_original.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,29 +49,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.heuristic.executor&quot;: &quot;Run&quot;,
-    &quot;Python.jess_adapted_v1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/ethanhunter/Research/Code/CostFnFire&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.cost_function.executor": "Run",
+    "Python.costs_and_heuristics.executor": "Run",
+    "Python.heuristic.executor": "Run",
+    "Python.jess_adapted_v1.executor": "Run",
+    "Python.testing.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/ethanhunter/Research/Code/CostFnFire",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "configurable.group.project",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunManager" selected="Python.jess_adapted_v1">
-    <configuration name="heuristic" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="cost_function" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CostFnFire" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -85,7 +88,30 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/heuristic.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/cost_function.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="costs_and_heuristics" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="CostFnFire" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/costs_and_heuristics.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -140,11 +166,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.cost_function" />
+      <item itemvalue="Python.costs_and_heuristics" />
+      <item itemvalue="Python.jess_adapted_v1" />
+      <item itemvalue="Python.testing" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.jess_adapted_v1" />
+        <item itemvalue="Python.costs_and_heuristics" />
         <item itemvalue="Python.testing" />
-        <item itemvalue="Python.heuristic" />
+        <item itemvalue="Python.cost_function" />
       </list>
     </recent_temporary>
   </component>
@@ -167,7 +200,7 @@
       <workItem from="1733573435835" duration="11652000" />
       <workItem from="1734532825177" duration="30975000" />
       <workItem from="1734685281092" duration="3355000" />
-      <workItem from="1734690343387" duration="505000" />
+      <workItem from="1734690343387" duration="25534000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit - new graph classes and cost functions">
       <option name="closed" value="true" />
@@ -177,19 +210,50 @@
       <option name="project" value="LOCAL" />
       <updated>1734556079277</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Refactoring for extendability (enums/classes for cost functions and heuristics); better plotting.">
+      <option name="closed" value="true" />
+      <created>1734690893583</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1734690893584</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Refactoring and testing">
+      <option name="closed" value="true" />
+      <created>1734874612982</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1734874612982</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit - new graph classes and cost functions" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit - new graph classes and cost functions" />
+    <MESSAGE value="Refactoring for extendability (enums/classes for cost functions and heuristics); better plotting." />
+    <MESSAGE value="Refactoring and testing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactoring and testing" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CostFnFire$heuristic.coverage" NAME="heuristic Coverage Results" MODIFIED="1734650002754" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CostFnFire$jess_adapted_v1.coverage" NAME="jess_adapted_v1 Coverage Results" MODIFIED="1734690812710" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CostFnFire$testing.coverage" NAME="testing Coverage Results" MODIFIED="1734654425412" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$costs_and_heuristics.coverage" NAME="costs_and_heuristics Coverage Results" MODIFIED="1736508259952" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$jess_adapted_v1.coverage" NAME="jess_adapted_v1 Coverage Results" MODIFIED="1736511412734" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$testing.coverage" NAME="testing Coverage Results" MODIFIED="1736264301840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$cost_function.coverage" NAME="cost_function Coverage Results" MODIFIED="1734870430185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
