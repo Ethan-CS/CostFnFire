@@ -106,15 +106,20 @@ def plot_helper(heuristics, cost_type, each_graph, each_param, latest_results, n
         data = []
         for guy, values in results.items():
             heuristic = dict_of_heur_names[guy[4]]
-            data.extend([(heuristic, value) for value in values])
+            first_heuristic, *second_heuristic = heuristic.split('/')
+            second_heuristic = second_heuristic[0] if second_heuristic else ''
+            data.extend([[first_heuristic.strip(), second_heuristic.strip(), heuristic, value] for value in values])
 
-        df = pd.DataFrame(data, columns=['Heuristic', 'Nodes Saved'])
+        df = pd.DataFrame(data, columns=['First Heuristic', 'Second Heuristic', 'Full Heuristic', 'Nodes Saved'])
+
+        # Sort the dataframe
+        df = df.sort_values(['First Heuristic', 'Second Heuristic'])
 
         # Create the violin plot
-        plt.figure(figsize=(12, 6))
-        sns.violinplot(x='Heuristic', y='Nodes Saved', data=df,
-                       hue='Heuristic', palette=colour_map_for_sns,
-                       legend=False)
+        plt.figure(figsize=(14, 6))
+        sns.violinplot(x='Full Heuristic', y='Nodes Saved', data=df,
+                       hue='Full Heuristic', palette=colour_map_for_sns,
+                       order=df['Full Heuristic'].unique(), legend=False)
 
         # Customize the plot
         plt.title(
@@ -124,12 +129,15 @@ def plot_helper(heuristics, cost_type, each_graph, each_param, latest_results, n
         plt.ylabel('Number of Nodes Saved', fontsize=14)
         plt.xticks(rotation=45, ha='right')
 
+        # vertical lines to separate heuristic groups
+        for i in [3, 6]:
+            plt.axvline(x=i-0.5, color='black', linestyle=(0, (5, 10)), linewidth=1, alpha=0.5)
+
         # Save the violin plot to the plotting directory with a suitable filename
         violin_filename = f'plotting/violin_{each_graph.replace(" ", "_")}_{cost_type}.png'
         plt.tight_layout()
         plt.savefig(violin_filename)
 
-        # Close the figure to free up memory
         plt.close()
 
     return time.time() - plot_start

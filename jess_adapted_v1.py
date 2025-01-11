@@ -116,9 +116,9 @@ def main():
         (Heur.COST, Heur.DEGREE),
         (Heur.COST, Heur.THREAT)]
 
-    num_vertices = 30
-    num_trials = 50
-    budget = int(num_vertices / 10)
+    num_vertices = 25
+    num_trials = 25
+    budget = int(num_vertices / 10)  # TODO make this e.g. mean/median cost for each instance and box plot?
 
     graph_types = {"random geometric": [0.15],
                    "random n-regular": [4],
