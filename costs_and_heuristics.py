@@ -24,6 +24,16 @@ class HeuristicChoices(Enum):
     THREAT = 2,
     COST = 3
 
+    def __str__(self):
+        names = {HeuristicChoices.RANDOM: "Random",
+                 HeuristicChoices.DEGREE: "Degree",
+                 HeuristicChoices.THREAT: "Threat",
+                 HeuristicChoices.COST: "Cost"}
+        return names[self]
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class Heuristic:
     def __init__(self, which_heuristic: HeuristicChoices, tie_break: HeuristicChoices = None):
@@ -50,6 +60,9 @@ class Heuristic:
                 return ""
             return heuristic_names[self.which_heuristic]
         return f'{heuristic_names[self.which_heuristic]}/{heuristic_names[self.tie_break]}'
+
+    def __repr__(self):
+        return self.__str__()
 
     def choose(self, graph, protected, burning, costs, threat_dict=None):
         if threat_dict is None:
@@ -85,13 +98,26 @@ class CFn(Enum):
     STOCHASTIC_THREAT_HI = 5,
     HESITANCY_BINARY = 6,  # 0 with probability = hesitancy rate, 1 otherwise
 
+    def __str__(self):
+        names = {CFn.UNIFORM: "Uniform",
+                 CFn.UNIFORMLY_RANDOM: "Uniformly Random",
+                 CFn.STOCHASTIC_THREAT: "Stochastic Threat",
+                 CFn.STOCHASTIC_THREAT_LO: "Stochastic-Threat (low)",
+                 CFn.STOCHASTIC_THREAT_MID: "Stochastic-Threat (mid)",
+                 CFn.STOCHASTIC_THREAT_HI: "Stochastic-Threat (high)",
+                 CFn.HESITANCY_BINARY: "Hesitancy-Binary"}
+        return names[self]
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class CostFunction:
-
-    def __init__(self, function: CFn, max_cost=-1):
+    def __init__(self, function: CFn, max_cost=2, min_cost=1):
         self.dict_of_costs = None
         self.function = function
         self.max_cost = max_cost
+        self.min_cost = min_cost
 
     def __eq__(self, __value):
         if type(__value) is CostFunction:
@@ -109,6 +135,9 @@ class CostFunction:
                               CFn.HESITANCY_BINARY: 'Hesitancy - Binary Distribution'
                               }
         return f'function: {dict_of_cost_names[self.function]} \ncosts:,  {self.dict_of_costs}'
+
+    def __repr__(self):
+        return self.__str__()
 
     # TODO discuss w Jess how values and distributions are defined,
     #  should make them more directly comparable
@@ -129,26 +158,20 @@ class CostFunction:
                 return self.stochastic_threat_cost(threat_dict, value)
             case CFn.UNIFORMLY_RANDOM:
                 for vertex in graph.nodes():
-                    if self.max_cost < 0:
-                        self.max_cost = 5  # default to something
-                    self.dict_of_costs[vertex] = random.randint(1, self.max_cost)
+                    self.dict_of_costs[vertex] = random.randint(self.min_cost, self.max_cost)
                 return self.dict_of_costs
             case CFn.UNIFORM:
                 for vertex in graph.nodes():
-                    self.dict_of_costs[vertex] = value
+                    self.dict_of_costs[vertex] = max(value, self.min_cost)
                 return self.dict_of_costs
             case CFn.HESITANCY_BINARY:
                 probability = 0.2972
                 for vertex in graph.nodes():
                     r = random.random()
-                    self.dict_of_costs[vertex] = 1 if r > probability else 0
+                    self.dict_of_costs[vertex] = self.max_cost if r > probability else self.min_cost
                 return self.dict_of_costs
 
     def stochastic_threat_cost(self, threat_dict, sf=10, value=1):
         for vertex in threat_dict:
-            if self.max_cost > 0:
-                self.dict_of_costs[vertex] = max(min(int(threat_dict[vertex] / sf) + random.randint(-value, value),
-                                                     self.max_cost), 0)
-            else:
-                self.dict_of_costs[vertex] = max(threat_dict[vertex] + random.randint(-value, value), 0)
+            self.dict_of_costs[vertex] = max(min(int(threat_dict[vertex] / sf) + random.randint(-value, value), self.max_cost), self.min_cost)
         return self.dict_of_costs
