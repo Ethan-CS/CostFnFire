@@ -175,20 +175,6 @@ def main():
         "reptilia-tortoise-network-fi": [2005]
         }
 
-    # malawi data: http://www.sociopatterns.org/datasets/contact-patterns-in-a-village-in-rural-malawi/
-    # info: "observational contact data collected for 86 individuals living in a village in rural Malawi. These data
-    # were analyzed and published in the paper L. Ozella et al., “Using wearable proximity sensors to characterize
-    # social contact patterns in a village of rural Malawi”, EPJ Data Science 10, 46 (2021)."
-
-    # reptilia-tortoise-network-fi.csv: https://networkrepository.com/reptilia-tortoise-network-fi.php
-    # data points in each year from 2005 to 2013 (inclusive)
-    # warning! very big! give a year in params
-    # 787 nodes, 1700 edges, density 0.00553847, max degree 40, min degree 1, average degree 4, assortativity 0.53928
-    # num triangles 7.6k, avg num triangles 9, max num triangles 266, avg clustering coeff. 0.353495, LB of max clique 5
-
-    # mammalia-raccoon-proximity.csv: https://networkrepository.com/mammalia-raccoon-proximity.php
-    # info: "proximity network of raccoons in the area of the Cedar Creek Ecosystem Science Reserve in Minnesota, USA."
-    # 24 nodes, 2K edges, density 7.23551, max degree 280, min degree 14, avg deg. 166, assortativity 0.0761359
 
     # TODO: more graphs, in particular varying connection topology (some more like preferential attachment, some more
     #  regular - in the latter, choosing by degree rubbish, in former, possibly better, cost will usually vary
