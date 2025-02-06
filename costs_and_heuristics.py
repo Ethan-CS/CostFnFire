@@ -34,6 +34,18 @@ class HeuristicChoices(Enum):
     def __repr__(self):
         return self.__str__()
 
+    @staticmethod
+    def from_string(s: str):
+        names = {"random": HeuristicChoices.RANDOM,
+                 "degree": HeuristicChoices.DEGREE,
+                 "threat": HeuristicChoices.THREAT,
+                 "cost": HeuristicChoices.COST}
+        return names[s.lower()]
+
+    @classmethod
+    def index_of(cls, which_heuristic):
+        return list(cls).index(which_heuristic)
+
 
 class Heuristic:
     def __init__(self, which_heuristic: HeuristicChoices, tie_break: HeuristicChoices = None):
@@ -88,6 +100,14 @@ class Heuristic:
 
         return min(open_vertices, key=key_func)
 
+    @classmethod
+    def from_string(cls, h: str):
+        if '/' in h:
+            h1, h2 = h.split('/')
+            return cls(HeuristicChoices.from_string(h1), HeuristicChoices.from_string(h2))
+        else:
+            return cls(HeuristicChoices.from_string(h))
+
 
 class CFn(Enum):
     UNIFORM = 0,  # same val for all
@@ -111,19 +131,36 @@ class CFn(Enum):
     def __repr__(self):
         return self.__str__()
 
+    @classmethod
+    def from_string(cls, function):
+        names = {"uniform": CFn.UNIFORM,
+                 "uniformly random": CFn.UNIFORMLY_RANDOM,
+                 "stochastic threat": CFn.STOCHASTIC_THREAT,
+                 "stochastic threat low": CFn.STOCHASTIC_THREAT_LO,
+                 "stochastic threat mid": CFn.STOCHASTIC_THREAT_MID,
+                 "stochastic threat high": CFn.STOCHASTIC_THREAT_HI,
+                 "hesitancy binary": CFn.HESITANCY_BINARY}
+        return names[function.lower()]
+
 
 class CostFunction:
-    def __init__(self, function: CFn, max_cost=2, min_cost=1):
+    def __init__(self, function, max_cost=2, min_cost=1):
         self.dict_of_costs = None
-        self.function = function
         self.max_cost = max_cost
         self.min_cost = min_cost
 
-    def __eq__(self, __value):
-        if type(__value) is CostFunction:
-            return self.function == __value.function and self.cost == __value.cost
+        if isinstance(function, CFn):
+            self.function = function
+        elif isinstance(function, str):
+            self.function = CFn.from_string(function)
         else:
-            return False
+            raise ValueError(f"Invalid cost function: {function} of type {type(function)}")
+
+    # def __eq__(self, __value):
+    #     if type(__value) is CostFunction:
+    #         return self.function == __value.function and self.cost == __value.cost
+    #     else:
+    #         return False
 
     def __str__(self):
         dict_of_cost_names = {CFn.UNIFORM: 'Uniform',

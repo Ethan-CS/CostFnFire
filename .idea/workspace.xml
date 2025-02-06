@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="ANALYZE_INJECTED_CODE" value="false" />
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Even better plotting, more info in txts and a different csv input">
-      <change afterPath="$PROJECT_DIR$/network-data-in/about.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/network-data-in/analyse_graph.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/network-data-in/mammalia-raccoon-proximity.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/network-data-in/reptilia-tortoise-network-fi.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/network-data-in/tnet_malawi_pilot.csv" afterDir="false" />
+    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Removed unnecessary prints">
+      <change afterPath="$PROJECT_DIR$/network-data-in/reptilia-lizard-network-social.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/costs_and_heuristics.py" beforeDir="false" afterPath="$PROJECT_DIR$/costs_and_heuristics.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/jess_adapted_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/jess_adapted_v1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network-data-in/about.md" beforeDir="false" afterPath="$PROJECT_DIR$/network-data-in/about.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network-data-in/mammalia-raccoon-proximity.csv" beforeDir="false" afterPath="$PROJECT_DIR$/network-data-in/mammalia-raccoon-proximity.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network-data-in/tnet_malawi_pilot.csv" beforeDir="false" afterPath="$PROJECT_DIR$/network-data-in/tnet_malawi_pilot.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +31,7 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -49,26 +55,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.analyse_graph.executor": "Run",
-    "Python.cost_function.executor": "Run",
-    "Python.costs_and_heuristics.executor": "Run",
-    "Python.heuristic.executor": "Run",
-    "Python.jess_adapted_v1.executor": "Run",
-    "Python.testing.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/ethanhunter/Research/Code/CostFnFire",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.analyse_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cost_function.executor&quot;: &quot;Run&quot;,
+    &quot;Python.costs_and_heuristics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.graph_analysis.executor&quot;: &quot;Run&quot;,
+    &quot;Python.heuristic.executor&quot;: &quot;Run&quot;,
+    &quot;Python.jess_adapted_v1.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plotting.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/ethanhunter/Research/Code/CostFnFire&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -78,7 +87,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.analyse_graph">
+  <component name="RunManager" selected="Python.plotting">
     <configuration name="analyse_graph" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CostFnFire" />
       <option name="ENV_FILES" value="" />
@@ -102,7 +111,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="cost_function" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="graph_analysis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CostFnFire" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -116,30 +125,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/cost_function.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="costs_and_heuristics" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="CostFnFire" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/costs_and_heuristics.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/graph_analysis.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -163,6 +149,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/jess_adapted_v1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="plotting" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="CostFnFire" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/plotting.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -196,18 +205,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.analyse_graph" />
-      <item itemvalue="Python.cost_function" />
-      <item itemvalue="Python.costs_and_heuristics" />
+      <item itemvalue="Python.graph_analysis" />
+      <item itemvalue="Python.plotting" />
       <item itemvalue="Python.jess_adapted_v1" />
       <item itemvalue="Python.testing" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.analyse_graph" />
+        <item itemvalue="Python.plotting" />
         <item itemvalue="Python.jess_adapted_v1" />
-        <item itemvalue="Python.costs_and_heuristics" />
+        <item itemvalue="Python.graph_analysis" />
         <item itemvalue="Python.testing" />
-        <item itemvalue="Python.cost_function" />
+        <item itemvalue="Python.analyse_graph" />
       </list>
     </recent_temporary>
   </component>
@@ -235,7 +244,9 @@
       <workItem from="1737449357552" duration="204000" />
       <workItem from="1737449604590" duration="16298000" />
       <workItem from="1737536167348" duration="2428000" />
-      <workItem from="1737560046543" duration="1000000" />
+      <workItem from="1737560046543" duration="69316000" />
+      <workItem from="1738574983377" duration="378000" />
+      <workItem from="1738575383822" duration="1042000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit - new graph classes and cost functions">
       <option name="closed" value="true" />
@@ -285,7 +296,23 @@
       <option name="project" value="LOCAL" />
       <updated>1737129009440</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="CSVs, description MD doc and code to get CSV network metadata">
+      <option name="closed" value="true" />
+      <created>1737561118958</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1737561118958</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Removed unnecessary prints">
+      <option name="closed" value="true" />
+      <created>1737566635880</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1737566635880</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -310,14 +337,18 @@
     <MESSAGE value="Grouped violin plots by heuristic" />
     <MESSAGE value="Better plotting; results output to txt" />
     <MESSAGE value="Even better plotting, more info in txts and a different csv input" />
-    <option name="LAST_COMMIT_MESSAGE" value="Even better plotting, more info in txts and a different csv input" />
+    <MESSAGE value="CSVs, description MD doc and code to get CSV network metadata" />
+    <MESSAGE value="Removed unnecessary prints" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed unnecessary prints" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/CostFnFire$plotting.coverage" NAME="plotting Coverage Results" MODIFIED="1738344302737" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CostFnFire$heuristic.coverage" NAME="heuristic Coverage Results" MODIFIED="1734650002754" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CostFnFire$costs_and_heuristics.coverage" NAME="costs_and_heuristics Coverage Results" MODIFIED="1737046535709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CostFnFire$jess_adapted_v1.coverage" NAME="jess_adapted_v1 Coverage Results" MODIFIED="1737477953193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CostFnFire$testing.coverage" NAME="testing Coverage Results" MODIFIED="1736264301840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$jess_adapted_v1.coverage" NAME="jess_adapted_v1 Coverage Results" MODIFIED="1738150941449" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$testing.coverage" NAME="testing Coverage Results" MODIFIED="1737628813892" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CostFnFire$analyse_graph.coverage" NAME="analyse_graph Coverage Results" MODIFIED="1737560908423" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/network-data-in" />
     <SUITE FILE_PATH="coverage/CostFnFire$cost_function.coverage" NAME="cost_function Coverage Results" MODIFIED="1734870430185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CostFnFire$graph_analysis.coverage" NAME="graph_analysis Coverage Results" MODIFIED="1737991193882" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

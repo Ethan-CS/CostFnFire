@@ -1,3 +1,4 @@
+import csv
 import datetime
 import os
 import random
@@ -12,19 +13,18 @@ from plotting import plot_helper
 
 
 def run_experiments(size, p, num_trials, graph_type, heuristics, cost_type, budget, outbreak, progress=True):
-    trials = {}
-    all_costs = []
+    trials, strategies, cost_mappings = {}, {}, {}
     all_degrees = []
+
     if progress:
         print(f'{junk.Colours.GREEN}-' * num_trials, f'100% ({num_trials} trials)')
 
     for i in range(num_trials):
         if progress:
             print("-", end="")
-
         g, seed, degrees = get_graph(graph_type, p, size)
-        all_degrees.extend(degrees)
-
+        if len(all_degrees) == 0 or graph_type not in [f for f in os.listdir('network-data-in') if os.path.isfile(os.path.join('network-data-in', f))]:
+            all_degrees.append(degrees)
         if g.order() != size:  # e.g. read-in from csv, return actual size for plotting etc.
             size = g.order()
         for choice_type in heuristics:
@@ -35,17 +35,22 @@ def run_experiments(size, p, num_trials, graph_type, heuristics, cost_type, budg
             else:  # e.g. root is 'rand,' indicating choose a random vertex each time
                 root = random.choice(list(g.nodes))
 
-            input_params = (graph_type, size, p, seed, root, cost_type, choice_type)
+            input_params = (graph_type, size, p, seed, root, budget, cost_type, choice_type)
             trials.setdefault(input_params, [])
+            strategies.setdefault(input_params, [])
+            cost_mappings.setdefault(input_params, [])
 
-            saved = cost_firefighter(g, {root}, set([]), choice_type, cost_type, num_rounds=int(g.number_of_nodes() / 2), budget=budget, INFO=False)
+            saved, strategy, cost_mapping = cost_firefighter(g, {root}, set([]), choice_type, cost_type,
+                                                             num_rounds=int(g.number_of_nodes() / 2), budget=budget,
+                                                             info=False)
 
-            trials[input_params].append(saved[0])
-            all_costs.extend(saved[1])
+            trials[input_params].append(saved)
+            strategies[input_params].append(strategy)
+            cost_mappings[input_params].append(cost_mapping)
     if progress:
         print(f" 100% - {junk.Colours.UNDERLINE}complete")
         print(f'{junk.Colours.END}')
-    return trials, size, all_costs, all_degrees
+    return trials, size, all_degrees, strategies, cost_mappings
 
 
 def get_graph(graph_type, p, size):
@@ -57,23 +62,29 @@ def get_graph(graph_type, p, size):
                 df = pd.read_csv(f'network-data-in/{graph_type}.csv', sep=None, engine='python')
                 if len(df.columns) < 2:
                     raise ValueError("CSV file must have at least two columns for source and target nodes")
+                df.columns = df.columns.astype(str)  # Ensure column names are strings
                 df = df.rename(columns={df.columns[0]: 'source', df.columns[1]: 'target'})
-                year_col = next((col for col in df.columns if col.lower() == 'year'), None)
 
-                if year_col and p is not None and p != 0:
-                    available_years = df[year_col].unique()
-                    if p in available_years:
-                        df = df[df[year_col] == p]
-                    else:
-                        raise ValueError(
-                            f"The year {p} is not present in the data. Available years are: {sorted(available_years)}")
+                # Check for edge weight and time columns
                 if len(df.columns) > 2:
-                    # Create graph with edge attributes if there are more columns
-                    g = nx.from_pandas_edgelist(df, 'source', 'target', edge_attr=True)
-                    return g, -1, [degree for node, degree in g.degree()]
+                    df = df.rename(columns={df.columns[2]: 'weight'})
+                if len(df.columns) > 3:
+                    df = df.rename(columns={df.columns[3]: 'time'})
+
+                if p != -1:
+                    if 'time' in df.columns and p in df['time'].unique():
+                        df = df[df['time'] == p]
+                    elif 'weight' in df.columns and p in df['weight'].unique():
+                        df = df[df['weight'] == p]
+                    else:
+                        raise ValueError(f"Value {p} not found in 'time' or 'weight' columns of CSV file")
+
+                if len(df.columns) > 2:
+                    g = nx.from_pandas_edgelist(df, 'source', 'target', edge_attr=df.columns[2:].tolist())
                 else:
-                    g = nx.from_pandas_edgelist(df)
-                    return g, -1, [degree for node, degree in g.degree()]
+                    g = nx.from_pandas_edgelist(df, 'source', 'target')
+
+                return g, -1, [degree for node, degree in g.degree()]
             except Exception as e:
                 raise Exception(f"Error reading CSV file: {e}")
 
@@ -81,7 +92,7 @@ def get_graph(graph_type, p, size):
         if graph_type.lower() in ['erdos renyi', 'er']:
             g = nx.erdos_renyi_graph(size, p, seed=seed)
             return g, seed, [degree for node, degree in g.degree()]
-        elif graph_type.lower() in ['barabasi-albert', 'barabasi albert', 'ba']:
+        elif graph_type.lower in ['barabasi-albert', 'barabasi albert', 'ba']:
             g = nx.barabasi_albert_graph(n=size, m=p, seed=seed)
             return g, seed, [degree for node, degree in g.degree()]
         elif graph_type.lower() in ['random geometric', 'rand geom', 'geometric random', 'geom rand']:
@@ -102,61 +113,114 @@ def get_graph(graph_type, p, size):
         raise Exception(f"\nSorry, I didn't recognise this graph type: {graph_type}, type: {type(graph_type)}")
 
 
-def cost_firefighter(graph, burning, protected, heuristic, cost_function_type, budget, num_rounds=50, INFO=True):
-    if INFO:
+def cost_firefighter(graph, burning, protected, heuristic, cost_function_type, budget, num_rounds=50, info=False,
+                     temporal=None):
+    if temporal is None:
+        temporal = any(
+            attr in data for _, _, data in graph.edges(data=True) for attr in ['time', 'week', 'month', 'year'])
+    if info:
         print("\n\n\nNEW RUN")
     total_nodes = len(graph.nodes())
-    all_costs = []
+    strategy, cost_mapping = [], []
     for i in range(num_rounds):
-        open = graph.nodes() - protected - burning
-        if len(open) == 0:
+        open_nodes = graph.nodes() - protected - burning
+        if len(open_nodes) == 0:
             break
         # choose something to protect
         cost_fn = CostFunction(cost_function_type)
         threat_dict = populate_threat_dict(graph, burning, protected)
         costs = cost_fn.cost(graph, threat_dict=threat_dict)
-        all_costs.extend(list(costs.values()))
-        if INFO:
+        cost_mapping.append(costs)
+        if info:
             print("Threat dict", threat_dict)
             print("COST FUNCTION")
             print(cost_fn, cost_function_type)
             print(costs)
 
         total_cost = 0
+        round_strategy = []
         while total_cost < budget:
-            open = graph.nodes() - protected - burning
-            if len(open) == 0:
+            open_nodes = graph.nodes() - protected - burning
+            if len(open_nodes) == 0:
                 break
             node_to_protect = heuristic.choose(graph, protected, burning, costs)
             total_cost += costs[node_to_protect]
             if total_cost < budget:
                 protected.add(node_to_protect)
-
+                round_strategy.append(node_to_protect)
+        strategy.append(round_strategy)
         neighbours = set()
         for v in burning:
-            neighbours.update(set(graph.neighbors(v)))
+            if temporal:  # need to filter edges on current time step
+                current_edges = [(u, w) for u, w, t in graph.edges(v, data='time') if t == i]
+                neighbours.update([w for u, w in current_edges])
+            else:
+                neighbours.update(set(graph.neighbors(v)))
         neighbours -= set(protected)
         burning.update(neighbours)
 
-        if INFO:
+        if info:
             print("Burning nodes")
             print(burning)
             print("Protected nodes")
             print(protected)
         if (len(burning) + len(protected)) == total_nodes:
             break
-    return len(graph.nodes()) - len(burning), all_costs
+    return len(graph.nodes()) - len(burning), strategy, cost_mapping
+
+
+def write_to_csv(data, path, filename, header):
+    file_path = f'{path}/{filename}'
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)  # Ensure the directory exists
+    file_exists = os.path.exists(file_path)
+    file_empty = file_exists and os.path.getsize(file_path) == 0
+    with open(file_path, 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        if not file_exists or file_empty:
+            writer.writerow(header)
+        for row in data:
+            writer.writerow(row)
+
+
+def write_degrees_to_csv(degrees, path):
+    header = ['Degrees']
+    write_to_csv(degrees, path, 'degrees.csv', header)
+
+
+def write_strategies_to_csv(strategies, path):
+    data = [list(key) + [strategy] for key, strategy_list in strategies.items() for strategy in strategy_list]
+    header = ['Graph Type', 'Size', 'P', 'Seed', 'Root', 'Budget', 'Cost Type', 'Choice Type', 'Strategy']
+    write_to_csv(data, path, 'strategies.csv', header)
+
+
+def write_cost_mappings_to_csv(cost_mappings, path):
+    data = [list(key) + [cost_mapping] for key, cost_mapping_list in cost_mappings.items() for cost_mapping in
+            cost_mapping_list]
+    header = ['Graph Type', 'Size', 'P', 'Seed', 'Root', 'Budget', 'Cost Type', 'Choice Type', 'Cost Mapping']
+    write_to_csv(data, path, 'cost_mappings.csv', header)
+
+
+def write_results_to_file(graph, path, results):
+    graph_name = str(graph).split('/')[-1] if '/' in str(graph) else str(graph)
+    filename = f'{graph_name.replace(" ", "_")}/results.csv'
+    header = ["graph_type", "num_vertices", "parameter", "seed", "outbreak", "budget", "cost_function", "heuristic", "num_vertices_saved"]
+    data = [list(r) + [results[r]] for r in results]
+    write_to_csv(data, path, filename, header)
 
 
 def main():
-    cost_functions = [CFn.STOCHASTIC_THREAT,
-                      CFn.HESITANCY_BINARY,
-                      CFn.UNIFORMLY_RANDOM]
+    cost_functions = [CFn.UNIFORM,
+                      CFn.UNIFORMLY_RANDOM,
+                      CFn.STOCHASTIC_THREAT_LO,
+                      CFn.STOCHASTIC_THREAT_HI,
+                      CFn.HESITANCY_BINARY]
 
     heuristics = []
-    for h1 in HeuristicChoices:
+    heuristic_choices = [HeuristicChoices.RANDOM, HeuristicChoices.DEGREE, HeuristicChoices.THREAT,
+                         HeuristicChoices.COST]
+    for h1 in heuristic_choices:
         heuristics.append(Heuristic(h1, None))
-        for h2 in HeuristicChoices:
+        for h2 in heuristic_choices:
             if h1 != h2:
                 could_add = Heuristic(h1, h2)
                 if could_add not in heuristics:
@@ -164,78 +228,95 @@ def main():
 
     num_vertices = 20
     num_trials = 50
-    budget = int(num_vertices / 8)  # TODO vary this sensibly
-    outbreak = 'rand'  # can be an int ot 'rand' for random outbreak each time
+    outbreak = 'rand'  # can be an int vertex or 'rand' for random outbreak each time
     graph_types = {
-        "mammalia-raccoon-proximity": [0],
-        "tnet_malawi_pilot": [0],
+        # "mammalia-raccoon-proximity": [-1],
+        # "tnet_malawi_pilot": [-1],
+        "reptilia-lizard-network-social": [-1],
+        # "reptilia-tortoise-network-fi": [2005]
         # "random geometric": [0.1, 0.5, 0.9],
         # "random n-regular": [2, 3, 4],
         # "Barabasi-Albert": [int(num_vertices / 16), int(num_vertices / 8)],
-        "reptilia-tortoise-network-fi": [2005]
-        }
 
+    }
 
     # TODO: more graphs, in particular varying connection topology (some more like preferential attachment, some more
     #  regular - in the latter, choosing by degree rubbish, in former, possibly better, cost will usually vary
     #  by cost distribution, part of the story to explain)
 
     # TODO: some experiments that mirror theoretical sections, e.g. trees, sea fans
-
     start = time.time()
     exp_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    for cost_type in cost_functions:
-        path = f'output/{exp_id}/{cost_type}'
-        os.makedirs(path, exist_ok=True)
+    for budget in [2, 4, 6, 8, 10]:
+        print(f' ===== budget: {budget} =====')
+        for cost_type in cost_functions:
+            path = f'output/{exp_id}/{cost_type}'
+            os.makedirs(path, exist_ok=True)
 
-        each_cost_start = time.time()
+            each_cost_start = time.time()
 
-        for graph in graph_types.keys():
-            print(f' ***** {graph} *****')
-            each_graph_start = time.time()
-            results = {}
-            for each_param in graph_types[graph]:
-                print(f'  cost fn.: {cost_type}, graph type: {graph}, input param.: {each_param}')
-                latest_results, actual_num_vertices, costs, degrees = run_experiments(num_vertices, each_param, num_trials,
-                                                                             graph, heuristics, cost_type=cost_type,
-                                                                             budget=budget, outbreak=outbreak, )
-                # latest results format:
-                # (graph_type, size, p, seed, outbreaks, cost_type, choice_type): num_saved_vertices
-                results.update(latest_results)
+            for graph in graph_types.keys():
+                print(f' ***** {graph} *****')
+                each_graph_start = time.time()
+                results = {}
+                for each_param in graph_types[graph]:
+                    print(f'  cost fn.: {cost_type}, graph type: {graph}, input param.: {each_param}')
+                    latest_results, actual_num_vertices, degrees, strategies, cost_mappings = run_experiments(
+                        num_vertices, each_param,
+                        num_trials,
+                        graph, heuristics,
+                        cost_type=cost_type,
+                        budget=budget,
+                        outbreak=outbreak)
+                    # latest results format:
+                    # (graph_type, size, p, seed, outbreaks, budget, cost_type, choice_type): num_saved_vertices
+                    results.update(latest_results)
+                    each_graph_end = time.time() - each_graph_start
 
-                each_graph_end = time.time() - each_graph_start
+                    write_degrees_to_csv(degrees, f'{path}/{graph.replace(" ", "_")}')
+                    write_strategies_to_csv(strategies, f'{path}/{graph.replace(" ", "_")}')
+                    write_cost_mappings_to_csv(cost_mappings, f'{path}/{graph.replace(" ", "_")}')
 
-                print(
-                    f'end of considering {graph} under {cost_type}, took {each_graph_end} secs - now plotting...')
-                plot_time = plot_helper(heuristics=heuristics, cost_type=cost_type, each_graph=graph,
-                                        each_param=each_param, latest_results=latest_results,
-                                        num_vertices=actual_num_vertices, results=results, budget=budget, costs=costs,
-                                        degrees=degrees, violin_too=True, location=path)
-                print(f'(took {plot_time}s to plot)')
+                    all_costs = []
+                    for cost_mapping_list in cost_mappings.values():
+                        for cost_mapping in cost_mapping_list:
+                            for costs in cost_mapping:
+                                all_costs.extend(costs.values())
 
-            graph_name = str(graph).split('/')[-1] if '/' in str(graph) else str(graph)
-            filename = f'{path}/{graph_name.replace(" ", "_")}/results.csv'
-            print(f'Writing to file {filename} ...')
-            # Check if the file exists and is empty
-            file_exists = os.path.exists(filename)
-            file_empty = file_exists and os.path.getsize(filename) == 0
+                    print(f'considered {graph} under {cost_type}, took {each_graph_end:.2f} secs - now plotting...')
+                    plot_time = plot_helper(heuristics=heuristics, cost_type=cost_type, each_graph=graph,
+                                            each_param=each_param, latest_results=latest_results,
+                                            num_vertices=actual_num_vertices, budget=budget,
+                                            costs=all_costs, degrees=degrees, location=path)
+                    print(f'(took {plot_time:.2f}s to plot)')
+                # when we have considered all params, write results to a csv file
+                write_results_to_file(graph, path, results)
+            # finished considering a cost function, stop timer
+            each_cost_end = time.time() - each_cost_start
+            print(f'end of considering {cost_type}, took {each_cost_end:.2f} secs')
 
-            with open(filename, "a") as f:
-                if not file_exists or file_empty:
-                    f.write(
-                        "graph_type,num_vertices,parameter,seed,outbreak,cost_function,heuristic,num_vertices_saved\n")
+        time_taken = time.time() - start
+        print('All done!')
+        print(f'Total time taken: {datetime.timedelta(seconds=time_taken)} ({time_taken} secs)')
 
-                for r in results:
-                    formatted_r = [str(x).replace(' ', '_') if isinstance(x, str) else str(x) for x in r]
-                    f.write(','.join(formatted_r) + ',' + ','.join(map(str, results[r])) + '\n')
 
-            print(f'Finished writing to {filename}')
-
-        each_cost_end = time.time() - each_cost_start
-        print(f'end of considering {cost_type}, took {each_cost_end} secs')
-    print('All done!')
-    time_taken = time.time() - start
-    print(f'TOTAL time taken: {datetime.timedelta(seconds=time_taken)} ({time_taken} secs)')
+# def write_results_to_file(graph, path, results):
+#     graph_name = str(graph).split('/')[-1] if '/' in str(graph) else str(graph)
+#     filename = f'{path}/{graph_name.replace(" ", "_")}/results.csv'
+#     print(f'Writing to file {filename} ...')
+#     file_write_start = time.time()
+#     # Check if the file exists and is empty
+#     file_exists = os.path.exists(filename)
+#     file_empty = file_exists and os.path.getsize(filename) == 0
+#     with open(filename, "a") as f:
+#         if not file_exists or file_empty:
+#             f.write(
+#                 "graph_type,num_vertices,parameter,seed,outbreak,budget,cost_function,heuristic,num_vertices_saved\n")
+#
+#         for r in results:
+#             formatted_r = [str(x).replace(' ', '_') if isinstance(x, str) else str(x) for x in r]
+#             f.write(','.join(formatted_r) + ',' + ','.join(map(str, results[r])) + '\n')
+#     print(f'Finished writing to {filename} in {time.time() - file_write_start:.2f} secs')
 
 
 if __name__ == main():
