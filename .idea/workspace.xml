@@ -7,19 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Refactoring, first attempt at plotting from CSV (not yet working)">
-      <change afterPath="$PROJECT_DIR$/graph_analysis.py" afterDir="false" />
+    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Refactoring and added documentation for readability">
+      <change afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/costs_and_heuristics.py" beforeDir="false" afterPath="$PROJECT_DIR$/costs_and_heuristics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jess_adapted_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jess_original.py" beforeDir="false" afterPath="$PROJECT_DIR$/prelim_code.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/junk.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network-data-in/about.md" beforeDir="false" afterPath="$PROJECT_DIR$/network-data-in/about.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network-data-in/analyse_graph.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network-data-in/reptilia-tortoise-network-fi.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/network-data-in/tnet_malawi_pilot.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network-data-in/about.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -258,7 +249,7 @@
       <workItem from="1742203429998" duration="2959000" />
       <workItem from="1742576894514" duration="681000" />
       <workItem from="1743003503408" duration="149000" />
-      <workItem from="1743159464385" duration="1926000" />
+      <workItem from="1743159464385" duration="4161000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit - new graph classes and cost functions">
       <option name="closed" value="true" />
@@ -332,7 +323,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738836425009</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Refactoring and added documentation for readability">
+      <option name="closed" value="true" />
+      <created>1743161451714</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1743161451714</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -360,7 +359,8 @@
     <MESSAGE value="CSVs, description MD doc and code to get CSV network metadata" />
     <MESSAGE value="Removed unnecessary prints" />
     <MESSAGE value="Refactoring, first attempt at plotting from CSV (not yet working)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactoring, first attempt at plotting from CSV (not yet working)" />
+    <MESSAGE value="Refactoring and added documentation for readability" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactoring and added documentation for readability" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CostFnFire$plotting.coverage" NAME="plotting Coverage Results" MODIFIED="1742203740626" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
