@@ -9,6 +9,7 @@ plt.rcParams['figure.dpi'] = 600
 plt.rcParams['savefig.dpi'] = 600
 
 
+# Tests used during development
 def test_hesitancy_cost_fn():
     # Generate a list of costs to visualize distribution
     n_samples = 100000

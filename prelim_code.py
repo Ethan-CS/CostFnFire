@@ -2,7 +2,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
-# this is code provided by Jess for original experiments, please do not change
+
+# code used for preliminary experiments in conference version of paper
 
 def cost_firefighter(graph, burning, protected, choose, cost_function, num_rounds = 50, INFO = False, budget = 5):
   if INFO:

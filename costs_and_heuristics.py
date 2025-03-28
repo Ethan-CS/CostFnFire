@@ -2,8 +2,8 @@ import random
 from enum import Enum
 
 import networkx as nx
-from matplotlib import pyplot as plt
 
+# defines the costs and heuristics used in simulations
 
 def populate_threat_dict(graph: nx.Graph, burning: set, protected: set):
     open_vertices = graph.nodes() - protected - burning
