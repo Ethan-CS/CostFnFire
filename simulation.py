@@ -299,7 +299,7 @@ def main():
                 if could_add not in heuristics:
                     heuristics.append(could_add)
 
-    num_vertices = 25
+    num_vertices = 100
     num_trials = 50
     outbreak = 'rand'  # can be an int vertex or 'rand' for random outbreak each time
 
@@ -311,17 +311,17 @@ def main():
         "erdos-renyi": [0.05, 0.1, 0.15, 0.2, 0.25],
         "barabasi-albert": [1, 2, 3, 5, 8, 10],
 
-        # "watts-strogatz": [4, 6, 8, 10],  # k parameter (avg degree)
-        # "powerlaw-cluster": [2, 3, 4, 5],  # m parameter
-        #
-        # "scale-free": [-1],  # no parameter needed
-        #
-        # "random geometric": [0.05, 0.1, 0.15, 0.2, 0.25],
-        #
-        # "random n-regular": [2, 3, 4, 6, 8],
-        # "connected-caveman": [5, 10, 15, 20],  # clique sizes
-        #
-        # "random-lobster": [-1]
+        "watts-strogatz": [4, 6, 8, 10],  # k parameter (avg degree)
+        "powerlaw-cluster": [2, 3, 4, 5],  # m parameter
+
+        "scale-free": [-1],  # no parameter needed
+
+        "random geometric": [0.05, 0.1, 0.15, 0.2, 0.25],
+
+        "random n-regular": [2, 3, 4, 6, 8],
+        "connected-caveman": [5, 10, 15, 20],  # clique sizes
+
+        "random-lobster": [-1]
     }
 
     start = time.time()

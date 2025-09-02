@@ -8,10 +8,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="&#10;Added readme.md, including info. from network-data md">
-      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Improved plotting, added more graphs for simulations">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -261,7 +260,7 @@
       <workItem from="1755183038287" duration="94000" />
       <workItem from="1755702956573" duration="6394000" />
       <workItem from="1756716277829" duration="782000" />
-      <workItem from="1756804051294" duration="2135000" />
+      <workItem from="1756804051294" duration="3615000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit - new graph classes and cost functions">
       <option name="closed" value="true" />
@@ -351,7 +350,15 @@
       <option name="project" value="LOCAL" />
       <updated>1743173645621</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Improved plotting, added more graphs for simulations">
+      <option name="closed" value="true" />
+      <created>1756806541834</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1756806541834</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -381,7 +388,8 @@
     <MESSAGE value="Refactoring, first attempt at plotting from CSV (not yet working)" />
     <MESSAGE value="Refactoring and added documentation for readability" />
     <MESSAGE value="&#10;Added readme.md, including info. from network-data md" />
-    <option name="LAST_COMMIT_MESSAGE" value="&#10;Added readme.md, including info. from network-data md" />
+    <MESSAGE value="Improved plotting, added more graphs for simulations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved plotting, added more graphs for simulations" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CostFnFire$plotting.coverage" NAME="plotting Coverage Results" MODIFIED="1756716532742" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
