@@ -10,6 +10,17 @@ import pandas as pd
 from costs_and_heuristics import CostFunction, Heuristic, populate_threat_dict, CFn, HeuristicChoices
 
 
+class Colours:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # main simulation code used to run Cost function firefighter simulations on given input graph(s)
 
 def run_experiments(size, p, num_trials, graph_type, heuristics, cost_type, budget, outbreak, progress=True):
@@ -101,6 +112,23 @@ def get_graph(graph_type, p, size):
                           f'  since num nodes * d must be even for random d-reg graph')
                     g = nx.random_regular_graph(d=p, n=(size + 1), seed=seed)
                     return g, seed, [degree for node, degree in g.degree()]
+            elif graph_type.lower() in ['watts-strogatz', 'small-world', 'ws']:
+                g = nx.watts_strogatz_graph(n=size, k=p, p=0.1, seed=seed)
+                return g, seed, [degree for node, degree in g.degree()]
+            elif graph_type.lower() in ['powerlaw-cluster', 'plc']:
+                g = nx.powerlaw_cluster_graph(n=size, m=p, p=0.1, seed=seed)
+                return g, seed, [degree for node, degree in g.degree()]
+            elif graph_type.lower() in ['scale-free', 'sf']:
+                g = nx.scale_free_graph(n=size, seed=seed)
+                return g, seed, [degree for node, degree in g.degree()]
+            elif graph_type.lower() in ['connected-caveman', 'caveman']:
+                l = max(1, p)  # clique size
+                k = size // l  # number of cliques
+                g = nx.connected_caveman_graph(l, k)
+                return g, seed, [degree for node, degree in g.degree()]
+            elif graph_type.lower() in ['random-lobster', 'lobster']:
+                g = nx.random_lobster(n=size, p1=0.5, p2=0.5, seed=seed)
+                return g, seed, [degree for node, degree in g.degree()]
             else:
                 raise Exception(f"\nSorry, I can't read this graph type: {graph_type}")
     raise Exception(f"\nSorry, I didn't recognise this graph type: {graph_type}, type: {type(graph_type)}")
@@ -271,17 +299,29 @@ def main():
                 if could_add not in heuristics:
                     heuristics.append(could_add)
 
-    num_vertices = 50
+    num_vertices = 25
     num_trials = 50
     outbreak = 'rand'  # can be an int vertex or 'rand' for random outbreak each time
+
     graph_types = {
-        "mammalia-raccoon-proximity": [-1],
-        "tnet-malawi-pilot": [-1],
-        "reptilia-lizard-network-social": [-1],
-        "random geometric": [0.1, 0.25, 0.5],
-        "random n-regular": [1, 2, 3, 4],
-        "barabasi-albert": [1, 2, 3, 4, 5],
-        "erdos-renyi": [0.05, 0.1, 0.15, 0.2, 0.25]
+        # "mammalia-raccoon-proximity": [-1],
+        # "tnet-malawi-pilot": [-1],
+        # "reptilia-lizard-network-social": [-1],
+
+        "erdos-renyi": [0.05, 0.1, 0.15, 0.2, 0.25],
+        "barabasi-albert": [1, 2, 3, 5, 8, 10],
+
+        # "watts-strogatz": [4, 6, 8, 10],  # k parameter (avg degree)
+        # "powerlaw-cluster": [2, 3, 4, 5],  # m parameter
+        #
+        # "scale-free": [-1],  # no parameter needed
+        #
+        # "random geometric": [0.05, 0.1, 0.15, 0.2, 0.25],
+        #
+        # "random n-regular": [2, 3, 4, 6, 8],
+        # "connected-caveman": [5, 10, 15, 20],  # clique sizes
+        #
+        # "random-lobster": [-1]
     }
 
     start = time.time()
@@ -298,9 +338,9 @@ def main():
 
             for graph in graph_types.keys():
                 print(f'graph: {graph}')
-                each_graph_start = time.time()
                 results = {}
                 for each_param in graph_types[graph]:
+                    each_graph_start = time.time()
                     print(f'input param.: {each_param}')
                     latest_results, actual_num_vertices, degrees, strategies, cost_mappings = run_experiments(
                         num_vertices, each_param,
@@ -324,12 +364,6 @@ def main():
                                 all_costs.extend(costs.values())
 
                     print(f'considered {graph} under {cost_type}, took {each_graph_end:.2f} secs.')
-                    # print('now plotting...')
-                    # plot_time = plot_helper(heuristics=heuristics, cost_type=cost_type, each_graph=graph,
-                    #                         each_param=each_param, latest_results=latest_results,
-                    #                         num_vertices=actual_num_vertices, budget=budget,
-                    #                         costs=all_costs, degrees=degrees, location=path)
-                    # print(f'(took {plot_time:.2f}s to plot)')
                 # when we have considered all params, write results to a csv file
                 write_results_to_file(graph, path, results)
             # finished considering a cost function, stop timer
@@ -361,15 +395,3 @@ def main():
 
 if __name__ == main():
     main()
-
-
-class Colours:
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    END = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'

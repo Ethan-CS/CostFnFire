@@ -36,8 +36,8 @@ def plot_helper(heuristics, cost_type, each_graph, each_param, latest_results, n
 
     boxplot_colours = base_colours[len(primary_heuristics):]
 
-    plt.rcParams['figure.dpi'] = 300
-    plt.rcParams['savefig.dpi'] = 300
+    plt.rcParams['figure.dpi'] = 1200
+    plt.rcParams['savefig.dpi'] = 1200
 
     handles, labels = [], []
 
@@ -121,9 +121,9 @@ def plot_helper(heuristics, cost_type, each_graph, each_param, latest_results, n
             sns.violinplot(x='Full Heuristic', y='Nodes Saved', data=subset_df,
                            hue='Full Heuristic', palette=colour_map,
                            order=subset_df['Full Heuristic'], ax=which_axis)
-            which_axis.set_title(f'{ph}', fontsize=16, fontweight='bold')
+            which_axis.set_title(f'{ph}', fontsize=20, fontweight='bold')
             if i == 0:
-                which_axis.set_ylabel('Number of Nodes Saved', fontsize=12)
+                which_axis.set_ylabel('Number of Nodes Saved', fontsize=20)
             else:
                 which_axis.set_ylabel('')
             which_axis.set_xlabel('')
@@ -138,7 +138,7 @@ def plot_helper(heuristics, cost_type, each_graph, each_param, latest_results, n
             which_axis = axes[i]
             which_axis.set_ylim(y_min, y_max)
 
-        fig.text(0.5, 0.02, 'Heuristic', ha='center', fontsize=12)
+        fig.text(0.5, 0.02, 'Heuristic', ha='center', fontsize=16)
         fig.suptitle(get_title(cost_type, each_graph, each_param, num_vertices), fontsize=18, fontweight='bold', y=0.95)
         plt.subplots_adjust(wspace=0.3, hspace=0.3, right=0.85, top=0.8, bottom=0.2)
         if each_param > -1:
@@ -232,18 +232,17 @@ def get_colours(heuristics, colour_palette='bright', blend_factor=0.65, adjust=0
 
 
 def main():
-    zettel_id = "20250219143736"
+    data_where = "data/simulation_results"
     # "added_to_paper_06-02-25/20250129114224-lizards"
-    directory = f"output/{zettel_id}"
+    directory = f"output"
 
     graph_names = {
         # "reptilia-lizard-network-social": {"name": "Lizard social network", "param_name": "none"},
         # "random_geometric": {"name": "Random Geometric", "param_name": "radius"},
-        # "random_n-regular": {"name": "Random n-Regular", "param_name": "degree"}
-        # 'mammalia-raccoon-proximity': {"name": 'Raccoon interaction network', "param_name": "none"}
-        # "erdos-renyi": {"name": "Erdos-Renyi", "param_name": "probability"},
-        # "barabasi-albert": {"name": "Barabasi-Albert", "param_name": "input edges"},
-        ""
+        # "random_n-regular": {"name": "Random n-Regular", "param_name": "degree"},
+        # 'mammalia-raccoon-proximity': {"name": 'Raccoon interaction network', "param_name": "none"},
+        "erdos-renyi": {"name": "Erdős–Rényi", "param_name": "probability"},
+        "barabasi-albert": {"name": "Barabási–Albert", "param_name": "input edges"}
     }
 
     # all_detailed_plots(directory, graph_names, zettel_id)
@@ -256,29 +255,31 @@ def main():
         ('Stochastic-Threat (low)', 'threat-based with\nlow stochasticity')
     ]
 
-    produce_summary_plots(cost_functions, directory, graph_names, zettel_id)
+    produce_summary_plots(cost_functions, f'{directory}/{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}', graph_names, data_where)
 
 
-def produce_summary_plots(cost_functions, directory, graph_names, zettel_id, same_scale=True):
+def produce_summary_plots(cost_functions, directory, graph_names, data_where, same_scale=True):
     for graph_name in graph_names.keys():
-        filepath = f'output/requested_plots/{zettel_id}-{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+        filepath = f'output/requested_plots/{directory}'
 
         title_name, param_name = graph_names[graph_name]["name"], graph_names[graph_name]["param_name"]
         # graph_df = pd.read_csv(f'network-data-in/{graph_name}.csv', delimiter=None, engine='python', sep=None)
         # G = nx.from_pandas_edgelist(graph_df)
 
         # graph_analysis.plot_graph_and_degree_distribution(G, -1, f'{filepath}/{graph_name}.png', title_name)
-        results_file_name = f"{graph_name}/results.csv"
 
         # params = graph_df[param_name].unique() if param_name != "none" else [None]
-        params = pd.read_csv(f'output/{zettel_id}/Hesitancy-Binary/{graph_name}/results.csv')['parameter'].unique()
+        params = pd.read_csv(f'output/{data_where}/Hesitancy-Binary/{graph_name}/results.csv'.lower())['parameter'].unique()
         for param in params:
+            already_set_y_label = False
+            count_for_x_label = 0
             fig, axes = plt.subplots(1, len(cost_functions), figsize=(20, 6.5))
             handles, labels = [], []
             max_y = float('-inf')
-            for i, (cost_dir, cost_name) in enumerate(cost_functions):
+            for i, (cost_dir_name, cost_name) in enumerate(cost_functions):
+                cost_dir = cost_dir_name.lower().replace(' ', '_').replace('(', '').replace(')', '')
                 ax = axes[i]
-                file = f'{directory}/{cost_dir}/{results_file_name}'
+                file = f'output/{data_where}/{cost_dir}/{graph_name}/results.csv'
                 df = pd.read_csv(file)
                 df.columns = df.columns.str.strip()
                 df = df[df['parameter'] == param]
@@ -302,9 +303,20 @@ def produce_summary_plots(cost_functions, directory, graph_names, zettel_id, sam
                     handles.extend(h for h in handle if h not in handles)
                     labels.extend(l for l in label if l not in labels)
 
-                ax.set_title(f'{cost_name}', fontsize=16, fontweight='bold')
-                ax.set_xlabel('Budget', fontsize=12)
-                ax.set_ylabel('Vertices Saved', fontsize=12)
+                ax.set_title(f'{cost_name}'.capitalize(), fontsize=22, fontweight='bold')
+                if count_for_x_label == 2:
+                    ax.xaxis.set_label_coords(0, -0.15)
+                    ax.set_xlabel('Budget', fontsize=20)
+                else:
+                    ax.set_xlabel('', fontsize=1)
+                count_for_x_label += 1
+
+                if not already_set_y_label:
+                    ax.yaxis.set_label_coords(-0.2, 0)
+                    ax.set_ylabel('Number of Vertices Saved', fontsize=20)
+                    already_set_y_label = True
+                else:
+                    ax.set_ylabel('', fontsize=1)
                 ax.grid(True)
 
                 ax.legend().remove()
@@ -314,15 +326,17 @@ def produce_summary_plots(cost_functions, directory, graph_names, zettel_id, sam
                 for ax in axes:
                     ax.set_ylim(0, max_y)
 
-            fig.suptitle(f'Heuristic performance comparison for {title_name} graphs{f" with {param_name} {param}" if param_name.lower() != "none" else ""}',
-                         fontsize=24, fontweight='bold', y=0.95)
+            fig.suptitle(f'Heuristic performance comparison for {title_name}{f" graphs with {param_name} {param}" if param_name.lower() != "none" else ""}\n ',
+                         fontsize=28, fontweight='bold', y=0.98)
             plt.subplots_adjust(wspace=0.3, hspace=0.3, right=0.85, top=0.8, bottom=0.2)
 
-            fig.legend(handles, labels, loc='center right', bbox_to_anchor=(1, 0.5), fontsize=12)
-            filename = f'{filepath}/{graph_name}_cost_comparison{f"_{param}" if param_name.lower() != "none" else ""}.png'
+            fig.legend(handles, labels, loc='center right', bbox_to_anchor=(1, 0.5), fontsize=16)
+            filename = f'{filepath}/{graph_name}_cost_comparison{f"_{param}" if param_name.lower() != "none" else ""}.pdf'
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=1200)
+            print(f'created a fig at {filename}')
             plt.close(fig)
+
 
 def all_detailed_plots(directory, graph_names, zettel_id):
     for graph_name in graph_names.keys():
@@ -361,8 +375,8 @@ def all_detailed_plots(directory, graph_names, zettel_id):
 
                 df = df[~df['heuristic'].str.startswith('Random/') & ~df['heuristic'].str.endswith('/Random')]
 
-                plt.rcParams['figure.dpi'] = 300
-                plt.rcParams['savefig.dpi'] = 300
+                plt.rcParams['figure.dpi'] = 1200
+                plt.rcParams['savefig.dpi'] = 1200
                 plt.rcParams['font.family'] = 'CMU Bright'
 
                 fig, axes = plt.subplots(2, 2, figsize=(20, 16))
@@ -379,8 +393,8 @@ def all_detailed_plots(directory, graph_names, zettel_id):
                     subset = df[df['heuristic'] == heuristic]
                     handles, labels = do_line_plot(ax, colour_map, heuristic, subset, first=True)
                 ax.set_title(f'All heuristics', fontsize=28, fontweight='bold')
-                ax.set_xlabel('Budget', fontsize=22, fontstyle='italic')
-                ax.set_ylabel('Number of Vertices Saved', fontsize=22, fontstyle='italic')
+                ax.set_xlabel('Budget', fontsize=26, fontstyle='italic')
+                ax.set_ylabel('Number of Vertices Saved', fontsize=26, fontstyle='italic')
                 ax.grid(True)
                 ax.legend().remove()
 
@@ -390,9 +404,9 @@ def all_detailed_plots(directory, graph_names, zettel_id):
                     if interesting_heuristics[0] == heuristic.split('/')[0] or heuristic == 'Random':
                         subset = df[df['heuristic'] == heuristic]
                         do_line_plot(ax, colour_map, heuristic, subset)
-                ax.set_title(f'{interesting_heuristics[0]} heuristic results', fontsize=28, fontweight='bold')
-                ax.set_xlabel('Budget', fontsize=22, fontstyle='italic')
-                ax.set_ylabel('Vertices Saved', fontsize=22, fontstyle='italic')
+                ax.set_title(f'{interesting_heuristics[0]} heuristic results', fontsize=30, fontweight='bold')
+                ax.set_xlabel('Budget', fontsize=26, fontstyle='italic')
+                ax.set_ylabel('Vertices Saved', fontsize=26, fontstyle='italic')
                 ax.grid(True)
                 ax.legend().remove()
 
@@ -402,9 +416,9 @@ def all_detailed_plots(directory, graph_names, zettel_id):
                     if interesting_heuristics[1] == heuristic.split('/')[0] or heuristic == 'Random':
                         subset = df[df['heuristic'] == heuristic]
                         do_line_plot(ax, colour_map, heuristic, subset)
-                ax.set_title(f'{interesting_heuristics[1]} heuristics', fontsize=28, fontweight='bold')
-                ax.set_xlabel('Budget', fontsize=22, fontstyle='italic')
-                ax.set_ylabel('Vertices Saved', fontsize=22, fontstyle='italic')
+                ax.set_title(f'{interesting_heuristics[1]} heuristics', fontsize=30, fontweight='bold')
+                ax.set_xlabel('Budget', fontsize=26, fontstyle='italic')
+                ax.set_ylabel('Vertices Saved', fontsize=26, fontstyle='italic')
                 ax.grid(True)
                 ax.legend().remove()
 
@@ -414,9 +428,9 @@ def all_detailed_plots(directory, graph_names, zettel_id):
                     if interesting_heuristics[2] == heuristic.split('/')[0] or heuristic == 'Random':
                         subset = df[df['heuristic'] == heuristic]
                         do_line_plot(ax, colour_map, heuristic, subset)
-                ax.set_title(f'{interesting_heuristics[2]} heuristics', fontsize=28, fontweight='bold')
-                ax.set_xlabel('Budget', fontsize=22, fontstyle='italic')
-                ax.set_ylabel('Vertices saved', fontsize=22, fontstyle='italic')
+                ax.set_title(f'{interesting_heuristics[2]} heuristics', fontsize=30, fontweight='bold')
+                ax.set_xlabel('Budget', fontsize=26, fontstyle='italic')
+                ax.set_ylabel('Vertices saved', fontsize=26, fontstyle='italic')
                 ax.grid(True)
                 ax.legend().remove()
 
