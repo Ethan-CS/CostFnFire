@@ -448,7 +448,7 @@ def main():
                 'random geometric': [0.05, 0.1, 0.15, 0.2, 0.25],
                 'random n-regular': [2, 3, 4, 6, 8],
                 'connected-caveman': [5, 10, 15, 20],
-                'random-lobster': [-1],
+                # 'random-lobster': [-1],
             }
             params = defaults.get(args.graph, [-1])
         graph_types = {args.graph: params}
