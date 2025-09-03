@@ -116,7 +116,7 @@ def main():
             continue
         graphs_arg = ','.join(graphs_for_host)
 
-        # Build a robust bootstrap: prefer venv python if available; try to create it; fall back to system python
+        # Build a robust bootstrap: prefer venv python if available; try to create it; then ensure pip; else use system python
         py = shlex.quote(args.python)
         proj_quoted = shlex.quote(str(proj))
         graphs_quoted = shlex.quote(graphs_arg)
@@ -124,19 +124,23 @@ def main():
         outbreak_quoted = shlex.quote(args.outbreak)
         exp_id_quoted = shlex.quote(exp_id)
 
-        # Remote script avoids `activate` and uses explicit python path
         remote_script = (
             f"cd {proj_quoted} ; "
-            # ensure log dir exists (relative to project dir)
             f"{mkdir_cmd} ; "
-            # choose python
+            # choose python (.venv if present or creatable)
             "if [ -x .venv/bin/python ]; then PYCMD=.venv/bin/python; "
             f"else {py} -m venv .venv >/dev/null 2>&1 || true; "
             "     if [ -x .venv/bin/python ]; then PYCMD=.venv/bin/python; else PYCMD=\"" + shlex.quote(args.python) + "\"; fi; fi; "
-            # install requirements with chosen python; if that fails (no perms), fallback to --user on system python
-            "${PYCMD} -m pip install -q -r requirements.txt || "
-            f"{py} -m pip install -q --user -r requirements.txt ; "
-            # launch
+            # try to ensure pip for current PYCMD (venv or system)
+            "if ! ${PYCMD} -c 'import pip' >/dev/null 2>&1; then "
+            "  ${PYCMD} -m ensurepip --upgrade >/dev/null 2>&1 || ${PYCMD} -m ensurepip >/dev/null 2>&1 || true; "
+            "fi; "
+            # if still no pip, switch to system python and try ensurepip there too
+            "if ! ${PYCMD} -c 'import pip' >/dev/null 2>&1; then PYCMD=" + py + "; "
+            "  ${PYCMD} -m ensurepip --upgrade >/dev/null 2>&1 || ${PYCMD} -m ensurepip >/dev/null 2>&1 || true; fi; "
+            # install requirements; try normal install first, else fallback to --user
+            "${PYCMD} -m pip install -q -r requirements.txt || ${PYCMD} -m pip install -q --user -r requirements.txt ; "
+            # launch with the same python so imports match installed site-packages
             "nohup ${PYCMD} tools/run_on_node.py "
             f"--graphs {graphs_quoted} "
             f"--size {args.size} --trials {args.trials} --budgets {budgets_quoted} "
