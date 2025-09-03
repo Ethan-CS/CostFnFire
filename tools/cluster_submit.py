@@ -15,7 +15,7 @@ Example (from fatanode-head):
 Notes:
 - Tie-break heuristics: do NOT pass --heuristics to include defaults with tie-breakers (Degree/Threat/Cost combos).
 - Costs: do NOT pass --costs to include the default 5 cost functions from simulation.py.
-- Logs: per-node stdout/stderr go to logs/cluster/<exp-id>/node-<host>.{log,err} on the shared project dir.
+- Logs: per-node stdout/stderr go to <project-dir>/<log-dir>/<exp-id>/node-<host>.{log,err} (default log-dir is logs/cluster).
 - Summary: once all nodes finish, run tools/summarize_results.py --base output/<exp-id> to aggregate.
 """
 from __future__ import annotations
@@ -62,6 +62,8 @@ def parse_args(argv):
     ap.add_argument("--exp-id", type=str, default=None,
                     help="Experiment id used across all nodes; default is timestamp")
     ap.add_argument("--python", type=str, default="python3", help="Python executable to use on nodes")
+    ap.add_argument("--log-dir", type=str, default="logs/cluster",
+                    help="Log directory relative to --project-dir or absolute; default: logs/cluster")
     ap.add_argument("--dry-run", action="store_true")
     return ap.parse_args(argv)
 
@@ -86,27 +88,44 @@ def main():
         print("--project-dir must be an absolute path shared across nodes", file=sys.stderr)
         sys.exit(2)
 
-    log_root = proj / 'logs' / 'cluster' / exp_id
-    log_root.mkdir(parents=True, exist_ok=True)
+    # Compute the log directory path relative to the project dir unless absolute provided.
+    user_log_dir = Path(args.log_dir)
+    if user_log_dir.is_absolute():
+        # Use absolute log dir as-is on each node
+        remote_log_dir = user_log_dir / exp_id
+        log_dir_display = remote_log_dir
+        ensure_prefix = shlex.quote(str(remote_log_dir))
+        redir_prefix = shlex.quote(str(remote_log_dir))
+        mkdir_cmd = f"mkdir -p {ensure_prefix}"
+    else:
+        # Store under project dir
+        remote_log_dir = user_log_dir / exp_id  # relative path
+        log_dir_display = proj / remote_log_dir
+        ensure_prefix = shlex.quote(str(remote_log_dir))
+        redir_prefix = shlex.quote(str(remote_log_dir))
+        mkdir_cmd = f"mkdir -p {ensure_prefix}"
 
     # Split graphs across nodes, round-robin
     graph_chunks = chunk(graphs, len(nodes))
 
     print(f"Submitting exp-id={exp_id} across {len(nodes)} node(s)")
     print(f"Project dir: {proj}")
+    print(f"Log dir: {log_dir_display}")
     print(f"Graph split: {graph_chunks}")
 
     for host, graphs_for_host in zip(nodes, graph_chunks):
         if not graphs_for_host:
             continue
         graphs_arg = ','.join(graphs_for_host)
-        # Build the remote command: ensure venv, install deps, launch run_on_node with nohup
+        # Build the remote command: ensure venv, install deps, create log dir, launch run_on_node with nohup
         remote_cmd = [
             f"cd {shlex.quote(str(proj))}",
             # Create venv if missing; then install deps quietly
             f"[ -d .venv ] || {args.python} -m venv .venv",
             f". .venv/bin/activate",
             f"pip install -q -r requirements.txt",
+            # Ensure log directory exists (relative to project dir unless absolute specified)
+            mkdir_cmd,
             # Launch
             (
                 "nohup "
@@ -120,8 +139,8 @@ def main():
                 + (" --save-details" if args.save_details else "")
                 + (" --progress" if args.progress else "")
                 + (f" --timeout {args.timeout}" if args.timeout else "")
-                + f" > {shlex.quote(str(log_root / f'node-{host}.log'))} "
-                + f" 2> {shlex.quote(str(log_root / f'node-{host}.err'))} &"
+                + f" > {redir_prefix}/node-{host}.log "
+                + f" 2> {redir_prefix}/node-{host}.err &"
             ),
         ]
         full = ' && '.join(remote_cmd)
@@ -142,13 +161,16 @@ def main():
             print(f"Error launching on {host}: {e}")
 
     print("\nAll submissions issued. Tail per-node logs under:")
-    print(log_root)
+    print(log_dir_display)
     print("Example:")
-    print(f"  tail -f {log_root}/node-{nodes[0]}.log")
+    print(f"  tail -f {log_dir_display}/node-{nodes[0]}.log")
     print("When finished, summarise with:")
     print(f"  {args.python} tools/summarize_results.py --base output/{exp_id}")
 
 
-if __name__ == "__main__":
+def main_wrapper():
     main()
 
+
+if __name__ == "__main__":
+    main_wrapper()

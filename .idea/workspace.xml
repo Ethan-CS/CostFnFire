@@ -9,7 +9,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="Added ability to use with node-head for job coordination">
-      <change beforePath="$PROJECT_DIR$/tools/smoke_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/smoke_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/cluster_submit.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/cluster_submit.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,6 +268,8 @@
       <workItem from="1756893356624" duration="1211000" />
       <workItem from="1756894685814" duration="114000" />
       <workItem from="1756894802431" duration="581000" />
+      <workItem from="1756895399389" duration="656000" />
+      <workItem from="1756896059741" duration="341000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit - new graph classes and cost functions">
       <option name="closed" value="true" />
@@ -396,7 +399,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756895079515</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Added ability to use with node-head for job coordination">
+      <option name="closed" value="true" />
+      <created>1756895484143</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1756895484143</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
