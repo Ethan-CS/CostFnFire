@@ -12,6 +12,12 @@ from __future__ import annotations
 import argparse
 import datetime
 from pathlib import Path
+import sys
+
+# Ensure project root is on sys.path when invoked from tools/
+PROJECT_ROOT = Path(__file__).parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from costs_and_heuristics import CFn, Heuristic, HeuristicChoices
 from simulation import run_experiments, write_degrees_to_csv, write_results_to_file
@@ -74,4 +80,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
