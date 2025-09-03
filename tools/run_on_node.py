@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Helper launcher for a single machine (e.g., one fatanode).
 - Runs one or more graphs sequentially.

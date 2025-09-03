@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Summarize all results.csv files under an output/<exp-id>/ directory into a single CSV.
 Usage:

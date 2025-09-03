@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Cluster submission helper to launch runs from a head node across multiple fatanodes.
 - Splits the full graph set across nodes (excluding random-lobster by default).
@@ -20,7 +19,6 @@ Notes:
 """
 from __future__ import annotations
 import argparse
-import os
 import shlex
 import subprocess
 import sys
@@ -117,41 +115,48 @@ def main():
         if not graphs_for_host:
             continue
         graphs_arg = ','.join(graphs_for_host)
-        # Build the remote command: ensure venv, install deps, create log dir, launch run_on_node with nohup
-        remote_cmd = [
-            f"cd {shlex.quote(str(proj))}",
-            # Create venv if missing; then install deps quietly
-            f"[ -d .venv ] || {args.python} -m venv .venv",
-            f". .venv/bin/activate",
-            f"pip install -q -r requirements.txt",
-            # Ensure log directory exists (relative to project dir unless absolute specified)
-            mkdir_cmd,
-            # Launch
-            (
-                "nohup "
-                f"{shlex.quote(args.python)} tools/run_on_node.py "
-                f"--graphs {shlex.quote(graphs_arg)} "
-                f"--size {args.size} --trials {args.trials} --budgets {shlex.quote(args.budgets)} "
-                f"--outbreak {shlex.quote(args.outbreak)} "
-                f"--jobs-per-process {args.jobs_per_process} --max-procs {args.max_procs} "
-                f"--output-dir output --exp-id {shlex.quote(exp_id)} "
-                + (" --resume" if args.resume else "")
-                + (" --save-details" if args.save_details else "")
-                + (" --progress" if args.progress else "")
-                + (f" --timeout {args.timeout}" if args.timeout else "")
-                + f" > {redir_prefix}/node-{host}.log "
-                + f" 2> {redir_prefix}/node-{host}.err &"
-            ),
-        ]
-        full = ' && '.join(remote_cmd)
-        ssh_cmd = ["ssh", host, full]
+
+        # Build a robust bootstrap: prefer venv python if available; try to create it; fall back to system python
+        py = shlex.quote(args.python)
+        proj_quoted = shlex.quote(str(proj))
+        graphs_quoted = shlex.quote(graphs_arg)
+        budgets_quoted = shlex.quote(args.budgets)
+        outbreak_quoted = shlex.quote(args.outbreak)
+        exp_id_quoted = shlex.quote(exp_id)
+
+        # Remote script avoids `activate` and uses explicit python path
+        remote_script = (
+            f"cd {proj_quoted} ; "
+            # ensure log dir exists (relative to project dir)
+            f"{mkdir_cmd} ; "
+            # choose python
+            "if [ -x .venv/bin/python ]; then PYCMD=.venv/bin/python; "
+            f"else {py} -m venv .venv >/dev/null 2>&1 || true; "
+            "     if [ -x .venv/bin/python ]; then PYCMD=.venv/bin/python; else PYCMD=\"" + shlex.quote(args.python) + "\"; fi; fi; "
+            # install requirements with chosen python; if that fails (no perms), fallback to --user on system python
+            "${PYCMD} -m pip install -q -r requirements.txt || "
+            f"{py} -m pip install -q --user -r requirements.txt ; "
+            # launch
+            "nohup ${PYCMD} tools/run_on_node.py "
+            f"--graphs {graphs_quoted} "
+            f"--size {args.size} --trials {args.trials} --budgets {budgets_quoted} "
+            f"--outbreak {outbreak_quoted} "
+            f"--jobs-per-process {args.jobs_per_process} --max-procs {args.max_procs} "
+            f"--output-dir output --exp-id {exp_id_quoted} "
+            + (" --resume" if args.resume else "")
+            + (" --save-details" if args.save_details else "")
+            + (" --progress" if args.progress else "")
+            + (f" --timeout {args.timeout}" if args.timeout else "")
+            + f" > {redir_prefix}/node-{host}.log 2> {redir_prefix}/node-{host}.err &"
+        )
+
+        ssh_cmd = ["ssh", host, remote_script]
 
         print("\n=== Host:", host)
         print("Graphs:", graphs_for_host)
         print("CMD:", ' '.join(shlex.quote(c) for c in ssh_cmd))
         if args.dry_run:
             continue
-        # Fire and forget
         try:
             p = subprocess.Popen(ssh_cmd)
             rc = p.wait()

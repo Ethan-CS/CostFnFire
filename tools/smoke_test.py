@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Run small, fast simulations across several graph types to validate the pipeline locally.
 This keeps trials and sizes small so it finishes quickly.
