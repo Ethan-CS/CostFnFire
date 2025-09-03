@@ -50,7 +50,8 @@ def ssh_run(host: str, cmd: str) -> str:
 
 
 def count_procs(host: str, pattern: str) -> int:
-    cmd = f"pgrep -af {pattern} | wc -l"
+    # Limit to the current remote user to avoid counting other users' runs on shared nodes
+    cmd = f"pgrep -u $(whoami) -af {pattern} | wc -l"
     out = ssh_run(host, cmd)
     try:
         return int(out)
@@ -110,4 +111,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -138,10 +138,17 @@ def main():
             # if still no pip, switch to system python and try ensurepip there too
             "if ! ${PYCMD} -c 'import pip' >/dev/null 2>&1; then PYCMD=" + py + "; "
             "  ${PYCMD} -m ensurepip --upgrade >/dev/null 2>&1 || ${PYCMD} -m ensurepip >/dev/null 2>&1 || true; fi; "
-            # install requirements; try normal install first, else fallback to --user
-            "${PYCMD} -m pip install -q -r requirements.txt || ${PYCMD} -m pip install -q --user -r requirements.txt ; "
-            # launch with the same python so imports match installed site-packages
-            "nohup ${PYCMD} tools/run_on_node.py "
+            # ensure ~/.local/bin on PATH for --user installs
+            "export PATH=\"$HOME/.local/bin:$PATH\" ; "
+            # install requirements; try python -m pip first, else fallback to pip3/pip
+            "if ${PYCMD} -c 'import pip' >/dev/null 2>&1; then "
+            "  ${PYCMD} -m pip install -q -r requirements.txt || ${PYCMD} -m pip install -q --user -r requirements.txt ; "
+            "else "
+            "  PIPCMD=$(command -v pip3 || command -v pip || echo "") ; "
+            "  if [ -n \"$PIPCMD\" ]; then \"$PIPCMD\" install -q --user -r requirements.txt ; fi ; "
+            "fi ; "
+            # launch with the same python so imports match installed site-packages; force unbuffered logs
+            "PYTHONUNBUFFERED=1 nohup ${PYCMD} -u tools/run_on_node.py "
             f"--graphs {graphs_quoted} "
             f"--size {args.size} --trials {args.trials} --budgets {budgets_quoted} "
             f"--outbreak {outbreak_quoted} "

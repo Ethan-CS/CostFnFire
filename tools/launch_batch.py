@@ -146,6 +146,7 @@ def main():
             time.sleep(0.5)
             # Handle timeouts for running procs
             now = time.time()
+            to_remove = set()
             for i, (p, par, out_fp, err_fp, start_ts) in list(enumerate(meta)):
                 if p.poll() is not None:
                     # Finished
@@ -154,16 +155,26 @@ def main():
                     except Exception:
                         pass
                     print(f"Process {p.pid} for param={par} exited with code {p.returncode}")
-                    procs.pop(i); meta.pop(i)
+                    to_remove.add(i)
                     continue
                 if args.timeout and (now - start_ts) > args.timeout:
                     print(f"Timeout reached for pid {p.pid} param={par}; killing...")
                     kill_process_tree(p)
                     try:
-                        out_fp.write("\n[TIMEOUT] Killed by launcher due to --timeout.\n"); out_fp.flush()
+                        out_fp.write("\n[TIMEOUT] Killed by launcher due to --timeout.\n"); out_fp.flush(); out_fp.close(); err_fp.close()
                     except Exception:
                         pass
-                    procs.pop(i); meta.pop(i)
+                    to_remove.add(i)
+            if to_remove:
+                for i in sorted(to_remove, reverse=True):
+                    try:
+                        procs.pop(i)
+                    except Exception:
+                        pass
+                    try:
+                        meta.pop(i)
+                    except Exception:
+                        pass
 
         cmd = build_command(param, args, exp_id)
         log_path = log_dir / f"param_{str(param).replace(' ', '_').replace('/', '-')}.log"
@@ -192,6 +203,7 @@ def main():
     while procs:
         time.sleep(0.5)
         now = time.time()
+        to_remove = set()
         for i, (p, par, out_fp, err_fp, start_ts) in list(enumerate(meta)):
             if p.poll() is not None:
                 try:
@@ -199,16 +211,26 @@ def main():
                 except Exception:
                     pass
                 print(f"Process {p.pid} for param={par} exited with code {p.returncode}")
-                procs.pop(i); meta.pop(i)
+                to_remove.add(i)
                 continue
             if args.timeout and (now - start_ts) > args.timeout:
                 print(f"Timeout reached for pid {p.pid} param={par}; killing...")
                 kill_process_tree(p)
                 try:
-                    out_fp.write("\n[TIMEOUT] Killed by launcher due to --timeout.\n"); out_fp.flush()
+                    out_fp.write("\n[TIMEOUT] Killed by launcher due to --timeout.\n"); out_fp.flush(); out_fp.close(); err_fp.close()
                 except Exception:
                     pass
-                procs.pop(i); meta.pop(i)
+                to_remove.add(i)
+        if to_remove:
+            for i in sorted(to_remove, reverse=True):
+                try:
+                    procs.pop(i)
+                except Exception:
+                    pass
+                try:
+                    meta.pop(i)
+                except Exception:
+                    pass
 
     # summarize results
     try:

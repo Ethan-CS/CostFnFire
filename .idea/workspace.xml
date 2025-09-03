@@ -8,8 +8,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="fixed a venv error">
+    <list default="true" id="28e98680-fe10-4ca3-beb8-49bd9079ef87" name="Changes" comment="launcher self-heals if pip not available (especially on remote)">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/cluster_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/cluster_status.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/cluster_submit.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/cluster_submit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/launch_batch.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/launch_batch.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -273,6 +276,8 @@
       <workItem from="1756896779318" duration="223000" />
       <workItem from="1756897007401" duration="167000" />
       <workItem from="1756897204271" duration="1746000" />
+      <workItem from="1756899663771" duration="1613000" />
+      <workItem from="1756913799434" duration="1467000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit - new graph classes and cost functions">
       <option name="closed" value="true" />
@@ -426,7 +431,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756898228213</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="launcher self-heals if pip not available (especially on remote)">
+      <option name="closed" value="true" />
+      <created>1756899713748</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1756899713748</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -462,7 +475,8 @@
     <MESSAGE value="Added ability to use with node-head for job coordination" />
     <MESSAGE value="Merge remote-tracking branch 'origin/master'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml" />
     <MESSAGE value="fixed a venv error" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed a venv error" />
+    <MESSAGE value="launcher self-heals if pip not available (especially on remote)" />
+    <option name="LAST_COMMIT_MESSAGE" value="launcher self-heals if pip not available (especially on remote)" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CostFnFire$simulation.coverage" NAME="simulation Coverage Results" MODIFIED="1756804945311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
